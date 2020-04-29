@@ -14,8 +14,8 @@ source ~/.venvs/dboenv/bin/activate
 ```
 echo 'alias dboenv="source ~/.venvs/dboenv/bin/activate"' >> ~/.zshrc
 source ~/.zshrc  
-dboenv #activate venv
-deactivate #deactivate venv
+dboenv      # activate
+deactivate  # deactivate
 ```
 
 2. Install python dependencies and dbo
