@@ -13,7 +13,7 @@ domain = np.array([[-10, 10]])
 obj_fun = lambda x: (x[0]-0.5)*np.sin(x[0])
 
 # Communication network
-num_agents = 3
+num_agents = 1
 N = np.eye(3)
 N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
 
@@ -21,7 +21,7 @@ N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
 BO = bayesian_optimization( obj = obj_fun,
                             domain = domain,
                             n_workers = num_agents,
-                            network = N,
+                            network = None,
                             kernel = gp.kernels.RBF(length_scale_bounds=(1, 1000)),
                             acquisition_function = 'ei',
                             stochastic_policy = False,

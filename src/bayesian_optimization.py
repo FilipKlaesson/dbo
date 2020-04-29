@@ -81,7 +81,6 @@ class bayesian_optimization:
         self.bc_data = None
         self.X_train = self.Y_train = None
         self.X = self.Y = None
-        self._simple_regret = []
         self._thompson_samples = [[] for i in range(n_workers)]
 
         # Directory setup
@@ -101,13 +100,20 @@ class bayesian_optimization:
                 pass
 
     def regret(self, y):
-        self._simple_regret.append(self.objective(self.arg_max) - y)
+        return self.objective(self.arg_max) - y
 
-    def save_data(self):
-        with open(self._DATA_DIR_ + '/regret.csv', 'w', newline='') as file:
-            writer = csv.writer(file)
-            for i in self._simple_regret:
-                writer.writerow([i])
+    def mean_regret(self):
+        r_mean = [np.mean(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
+        r_std = [np.std(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
+        # 95% confidence interval
+        conf95 = [1.96*rst/self._simple_regret.shape[0] for rst in r_std]
+        return r_mean, conf95, info
+
+    def save_data(self, data, name):
+        with open(self._DATA_DIR_ + '/' + name + '.csv', 'w', newline='') as file:
+            writer = csv.writer(file, delimiter=',')
+            for i in zip(*data):
+                writer.writerow(i)
         return
 
     def ridge(self, x, center = 0):
@@ -247,6 +253,9 @@ class bayesian_optimization:
             plot: bool or integer
                 If integer, plot iterations with every plot number iteration. If True, plot every interation.
         """
+
+        self._simple_regret = np.zeros((n_runs, n_iters+1))
+
         for run in tqdm(range(n_runs), position=0, leave = None, disable = not n_runs > 1):
 
             # Reset model and data before each run
@@ -319,8 +328,10 @@ class bayesian_optimization:
                     # Broadcast data to neighbours
                     self.broadcast(a,x,self.objective(x))
 
-                self.regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
+                # Calculate regret
+                self._simple_regret[run,n] = self.regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
 
+                # Plot optimization step
                 if n_runs == 1 and plot is not False:
                     if plot is True or n == n_iters:
                         self.plot_iteration(n)
@@ -331,8 +342,15 @@ class bayesian_optimization:
         for a in range(self.n_workers):
             self.pre_max.append(self.model[a].X_train_[np.array(self.model[a].y_train_).argmax()])
 
+        # Compute and plot regret
+        r_mean, conf95 = self.mean_regret()
+        self.plot_regret(r_mean, conf95)
+
+        # Save data
+        self.save_data(data = [r_mean, conf95], name = 'regret')
+
+        # Generate GIF
         if n_runs == 1:
-            self.save_data()
             if plot is not False:
                 self.generate_gif(n_iters, plot)
 
@@ -519,6 +537,35 @@ class bayesian_optimization:
             fig.subplots_adjust(wspace=0, hspace=0)
             plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d_agent_%d.pdf' % (iter, a), bbox_inches='tight')
             plt.savefig(self._PNG_DIR_ + '/bo_iteration_%d_agent_%d.png' % (iter, a), bbox_inches='tight')
+
+    def plot_regret(self, r_mean, conf95, log = False):
+
+        use_log_scale = max(r_mean)/min(r_mean) > 10
+
+        if not use_log_scale:
+            # absolut error for linear scale
+            lower = [r + err for r, err in zip(r_mean, conf95)]
+            upper = [r - err for r, err in zip(r_mean, conf95)]
+        else:
+            # relative error for log scale
+            lower = [10**(np.log10(r) + (0.434*err/r)) for r, err in zip(r_mean, conf95)]
+            upper = [10**(np.log10(r) - (0.434*err/r)) for r, err in zip(r_mean, conf95)]
+
+        fig = plt.figure()
+
+        if use_log_scale:
+            plt.yscale('log')
+
+        plt.plot(range(self._simple_regret.shape[1]), r_mean, '-', linewidth=1)
+        plt.fill_between(range(self._simple_regret.shape[1]), upper, lower, alpha=0.3)
+        plt.xlabel('iterations')
+        plt.ylabel('immediate regret')
+        plt.grid(b=True, which='major', color='grey', linestyle='-', alpha=0.6)
+        plt.grid(b=True, which='minor', color='grey', linestyle='--', alpha=0.3)
+        plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+        plt.tight_layout()
+        plt.savefig(self._PDF_DIR_ + '/regret.pdf', bbox_inches='tight')
+        plt.savefig(self._PNG_DIR_ + '/regret.png', bbox_inches='tight')
 
     def generate_gif(self, n_iters, plot):
         if self._dim == 1:
