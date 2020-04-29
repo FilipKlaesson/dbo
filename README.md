@@ -10,9 +10,9 @@ virtualenv -p python3 ~/.venvs/dboenv
 source ~/.venvs/dboenv/bin/activate
 ```
 
-3. Install python dependencies and dbo
+2. Install python dependencies and dbo
 ```
-cd cops_path/
+cd dbo_path/
 pip install -r requirements.txt
 python setup.py install
 ```
