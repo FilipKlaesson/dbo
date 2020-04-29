@@ -373,6 +373,13 @@ class bayesian_optimization:
         rgba = [cmap(i) for i in np.linspace(0,1,self.n_workers)]
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8,8), sharex=True)
 
+        class ScalarFormatterForceFormat(ticker.ScalarFormatter):
+            def _set_format(self):
+                self.format = "%1.2f"
+        fmt = ScalarFormatterForceFormat()
+        fmt.set_powerlimits((0,0))
+        fmt.useMathText = True
+
         #Objective function
         y_obj = [self.objective(i) for i in self._grid]
         ax1.plot(self._grid, y_obj, 'k--')
@@ -381,10 +388,14 @@ class bayesian_optimization:
             ax1.plot(self._grid, mu[a], color = rgba[a])
             ax1.fill_between(np.squeeze(self._grid), np.squeeze(mu[a]) - std[a], np.squeeze(mu[a]) + std[a], color = rgba[a], alpha=0.2)
             ax1.scatter(self.X[a], self.Y[a], color = rgba[a], s=20, zorder=3)
+            ax1.yaxis.set_major_formatter(fmt)
+            ax1.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
             # Acquisition function plot
             ax2.plot(self._grid, acq[a], color = rgba[a])
             ax2.axvline(self._next_query[a], color = rgba[a])
             ax2.set_xlabel("x")
+            ax2.yaxis.set_major_formatter(fmt)
+            ax2.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
 
         # Legends
         if self.n_workers > 1:
