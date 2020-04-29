@@ -152,6 +152,9 @@ for a in range(BO.n_workers):
 # Credits
 
 [Filip Klaesson](https://filipklaesson.github.io/)
+
 [Na Li](https://nali.seas.harvard.edu/)
+
 Runyu Zhang
+
 [Petter Nilsson](https://pettni.github.io/#/)
