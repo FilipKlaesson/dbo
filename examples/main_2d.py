@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.gaussian_process.kernels as kernels
-from bayesian_optimization import bayesian_optimization
-from benchmark_functions import *
+from src.bayesian_optimization import bayesian_optimization
+from src.benchmark_functions import *
 
 # Set numpy random seed
 np.random.seed(0)
@@ -17,7 +17,7 @@ obj_fun = lambda x: (0.4 * np.exp(-((x[0]+2)**2 + (x[1]+4)**2)/4**2) + \
 
 fun = Bohachevsky_1()
 domain = fun.domain
-obj_fun = -fun.function
+obj_fun = fun.function
 
 # Communication network
 num_agents = 3
@@ -34,6 +34,6 @@ BO = bayesian_optimization( obj = obj_fun, domain = domain,
                             grid_density = 30)
 
 # Optimize
-BO.optimize(n_iters = 10, n_pre_samples = 3, random_search = 1000, plot = True)
+BO.optimize(n_iters = 10, n_pre_samples = 3, random_search = 1000, plot = False)
 for a in range(BO.n_workers):
     print("Predicted optimum {}: {}".format(a, BO.predicted_optimum[a]))

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.gaussian_process as gp
-from bayesian_optimization import bayesian_optimization
+from src.bayesian_optimization import bayesian_optimization
 
 # Set numpy random seed
 np.random.seed(0)
@@ -27,6 +27,6 @@ BO = bayesian_optimization( obj = obj_fun, domain = domain,
                             grid_density = 1000 )
 
 # Optimize
-BO.optimize(n_iters = 10, n_pre_samples = 1, random_search = 1000, plot = True)
+BO.optimize(n_iters = 10, n_pre_samples = 1, random_search = 1000, plot = False)
 for a in range(BO.n_workers):
     print("Predicted optimum {}: {}".format(a, BO.predicted_optimum[a]))
