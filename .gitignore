@@ -1,0 +1,6 @@
+__pycache__
+*.pdf
+*.png
+*.gif
+*.DS_Store
+*.egg-info
