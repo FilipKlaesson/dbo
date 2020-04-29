@@ -11,6 +11,7 @@ np.random.seed(0)
 fun = Bohachevsky_1()
 domain = fun.domain
 obj_fun = lambda x: -1*fun.function(x)
+arg_max = fun.arg_min
 
 # Communication network
 num_agents = 3
@@ -18,12 +19,16 @@ N = np.eye(3)
 N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
 
 # Bayesian optimimzation object
-BO = bayesian_optimization( obj = obj_fun, domain = domain,
-                            n_workers = num_agents, network = N,
+BO = bayesian_optimization( obj = obj_fun,
+                            domain = domain,
+                            arg_max = arg_max,
+                            n_workers = num_agents,
+                            network = N,
                             kernel = kernels.RBF(length_scale_bounds=(1, 10000)),
                             acquisition_function = 'ei',
                             stochastic_policy = False,
-                            regularization = None, l = 0.01,
+                            regularization = None,
+                            l = 0.01,
                             grid_density = 30)
 
 # Optimize

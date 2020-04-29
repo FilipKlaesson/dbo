@@ -1,3 +1,6 @@
+import os
+import csv
+import datetime
 import numpy as np
 import itertools
 import imageio
@@ -17,7 +20,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, obj, domain, n_workers, network = None, kernel = gp.kernels.RBF(), noise=10**(-5), acquisition_function = 'ei', stochastic_policy = False, regularization = None, l = 0.01, grid_density = 30):
+    def __init__(self, obj, domain, arg_max = None, n_workers = 1, network = None, kernel = gp.kernels.RBF(), noise=10**(-5), acquisition_function = 'ei', stochastic_policy = False, regularization = None, l = 0.01, grid_density = 30):
 
         # Optimization setup
         self.objective = obj
@@ -27,7 +30,7 @@ class bayesian_optimization:
         else:
             self.network = network
         self.domain = domain    #shape = [n_params, 2]
-        self.n_params = domain.shape[0]
+        self.dim = domain.shape[0]
         self.grid = None
         self.grid_density = grid_density
         self.scaler = [StandardScaler() for i in range(n_workers)]
@@ -47,7 +50,6 @@ class bayesian_optimization:
         # Data info
         self.next_query = [[] for i in range(n_workers)]
         self.initial_data_size = None
-        self.optimum = None
         self.predicted_optimum = []
         self.bc_data = [[[] for j in range(n_workers)] for i in range(n_workers)]
         self.X_train = [[] for i in range(self.n_workers)]
@@ -55,6 +57,22 @@ class bayesian_optimization:
         self.X = [[] for i in range(self.n_workers)]
         self.Y = [[] for i in range(self.n_workers)]
         self.simple_regret = []
+
+        # Directory setup
+        self._DT_ = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        self._ROOT_DIR_ = os.path.dirname(os.path.dirname( __file__ ))
+        self._TEMP_DIR_ = os.path.join(self._ROOT_DIR_, "temp")
+        self._ID_DIR_ = os.path.join(self._TEMP_DIR_, self._DT_)
+        self._DATA_DIR_ = os.path.join(self._ID_DIR_, "data")
+        self._FIG_DIR_ = os.path.join(self._ID_DIR_, "fig")
+        self._PNG_DIR_ = os.path.join(self._FIG_DIR_, "png")
+        self._PDF_DIR_ = os.path.join(self._FIG_DIR_, "pdf")
+        self._GIF_DIR_ = os.path.join(self._FIG_DIR_, "gif")
+        for path in [self._TEMP_DIR_, self._DATA_DIR_, self._FIG_DIR_, self._PNG_DIR_, self._PDF_DIR_, self._GIF_DIR_]:
+            try:
+                os.makedirs(path)
+            except FileExistsError:
+                pass
 
         # Data for plots
         self.thompson_samples = [[] for i in range(n_workers)]
@@ -82,12 +100,22 @@ class bayesian_optimization:
             grid_elemets.append(np.linspace(i, j, self.grid_density))
         self.grid = np.array(list(itertools.product(*grid_elemets)))
 
-        # Find global optimum:
-        obj_grid = [self.objective(i) for i in self.grid]
-        self.optimum = self.grid[np.array(obj_grid).argmax(), :]
+        # Find global optimum
+        self.arg_max = arg_max
+        if self.arg_max is None:
+            obj_grid = [self.objective(i) for i in self.grid]
+            self.arg_max = self.grid[np.array(obj_grid).argmax(), :]
+        self.maximum = self.objective(self.arg_max)
 
-    def spl_regret(self, y):
-        self.simple_regret.append(self.objective(self.optimum) - y)
+    def regret(self, y):
+        self.simple_regret.append(self.maximum - y)
+
+    def save_data(self):
+        with open(self._DATA_DIR_ + '/regret.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            for i in self.simple_regret:
+                writer.writerow([i])
+        return
 
     def ridge(self, x, center = 0):
         return self.l * np.linalg.norm(x - center)
@@ -105,7 +133,7 @@ class bayesian_optimization:
                 Expected improvment margin, increases exploration
         """
 
-        x = x.reshape(-1, self.n_params)
+        x = x.reshape(-1, self.dim)
 
         Y_opt = np.max(self.model[a].y_train_)
 
@@ -139,8 +167,8 @@ class bayesian_optimization:
             x: array-like, shape = [n_samples, n_hyperparams]
                 The point for which the thompson samples needs to be computed.
         """
-        x = x.reshape(-1, self.n_params)
-        x_grid = np.append(self.grid, x).reshape(-1, self.n_params)
+        x = x.reshape(-1, self.dim)
+        x_grid = np.append(self.grid, x).reshape(-1, self.dim)
 
         ns = 1
         yts = model.sample_y(x_grid, n_samples=ns)
@@ -192,7 +220,7 @@ class bayesian_optimization:
             random_search: integer.
                 Number of random samples used to optimize the acquisition function. Default 1000
         """
-        x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], size=(random_search, self.n_params))
+        x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], size=(random_search, self.dim))
         if self.acquisition_function == self.expected_improvement:
             ei = - self.expected_improvement(model, x, a)
             #Stochastic Boltzmann Policy
@@ -206,7 +234,7 @@ class bayesian_optimization:
             x = x[np.argmax(ts), :]
         return x
 
-    def optimize(self, n_iters, x0=None, n_pre_samples=5, random_search=100, alpha=1e-5, epsilon=1e-7, plot = False):
+    def optimize(self, n_iters, n_runs = 1, x0=None, n_pre_samples=5, random_search=100, alpha=1e-5, epsilon=1e-7, plot = False):
         """
         Arguments:
         ----------
@@ -261,7 +289,7 @@ class bayesian_optimization:
                     Y = self.Y[a]
                     for transmitter in range(self.n_workers):
                         for (x,y) in self.prev_bc_data[transmitter][a]:
-                            X = np.append(X,x).reshape(-1, self.n_params)
+                            X = np.append(X,x).reshape(-1, self.dim)
                             Y = np.append(Y,y).reshape(-1, 1)
                             self.X_train[a].append(x)
                             self.Y_train[a].append(y)
@@ -283,7 +311,7 @@ class bayesian_optimization:
                 # Broadcast data to neighbours
                 self.broadcast(a,x,self.objective(x))
 
-            self.spl_regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
+            self.regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
 
             if plot is not False:
                 if plot is True or n == n_iters:
@@ -296,6 +324,8 @@ class bayesian_optimization:
 
         if plot is not False:
             self.generate_gif(n_iters, plot)
+
+        self.save_data()
 
     def broadcast(self, agent, x, y):
         for neighbour_agent, neighbour in enumerate(self.network[agent]):
@@ -322,9 +352,9 @@ class bayesian_optimization:
             mu[a] = self.scaler[a].inverse_transform(mu[a])
             std[a] = self.scaler[a].scale_ * std[a]
 
-        if self.n_params == 1:
+        if self.dim == 1:
             self._plot_1d(iter, mu, std, acq)
-        elif self.n_params == 2:
+        elif self.dim == 2:
             self._plot_2d(iter, mu, acq)
         else:
             print("Can't plot for higher dimensional problems.")
@@ -363,8 +393,8 @@ class bayesian_optimization:
         ax2.legend(handles=legend_elements2, loc='upper right', fancybox=True, framealpha=0.5)
 
         plt.tight_layout()
-        plt.savefig('figures/pdf/bo_iteration_%d.pdf' % (iter), bbox_inches='tight')
-        plt.savefig('figures/png/bo_iteration_%d.png' % (iter), bbox_inches='tight')
+        plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d.pdf' % (iter), bbox_inches='tight')
+        plt.savefig(self._PNG_DIR_ + '/bo_iteration_%d.png' % (iter), bbox_inches='tight')
 
     def _plot_2d(self, iter, mu, acq):
 
@@ -409,7 +439,7 @@ class bayesian_optimization:
             ax1.set_xticks(np.linspace(first_param_grid[0]+1,first_param_grid[-1]-1, 5))
             ax1.set_yticks(np.linspace(second_param_grid[0]+1,second_param_grid[-1]-1, 5))
             ax1.tick_params(axis='both', which='both', labelsize=7)
-            ax1.scatter(self.optimum[0], self.optimum[1], marker='x', c='gold', s=50)
+            ax1.scatter(self.arg_max[0], self.arg_max[1], marker='x', c='gold', s=50)
 
             # Surrogate plot
             d = 0
@@ -435,7 +465,7 @@ class bayesian_optimization:
             for transmitter in range(self.n_workers):
                 x_bc = []
                 for (xbc,ybc) in self.prev_bc_data[transmitter][a]:
-                    x_bc = np.append(x_bc,xbc).reshape(-1, self.n_params)
+                    x_bc = np.append(x_bc,xbc).reshape(-1, self.dim)
                 x_bc = np.array(x_bc)
                 if x_bc.shape[0]>0:
                     ax1.scatter(x_bc[:, 0], x_bc[:, 1], zorder=1, color = rgba[transmitter], s = 10)
@@ -462,32 +492,32 @@ class bayesian_optimization:
             ax3.tick_params(axis='both', which='both', labelsize=7)
 
             fig.subplots_adjust(wspace=0, hspace=0)
-            plt.savefig('figures/pdf/bo_iteration_%d_agent_%d.pdf' % (iter, a), bbox_inches='tight')
-            plt.savefig('figures/png/bo_iteration_%d_agent_%d.png' % (iter, a), bbox_inches='tight')
+            plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d_agent_%d.pdf' % (iter, a), bbox_inches='tight')
+            plt.savefig(self._PNG_DIR_ + '/bo_iteration_%d_agent_%d.png' % (iter, a), bbox_inches='tight')
 
     def generate_gif(self, n_iters, plot):
-        if self.n_params == 1:
+        if self.dim == 1:
             plots = []
             for i in range(n_iters+1):
                 if plot is True or i == n_iters:
                     try:
-                        plots.append(imageio.imread('figures/png/bo_iteration_%d.png' % (i)))
+                        plots.append(imageio.imread(self._PNG_DIR_ + '/bo_iteration_%d.png' % (i)))
                     except: pass
                 elif not i % plot:
                     try:
-                        plots.append(imageio.imread('figures/png/bo_iteration_%d.png' % (i)))
+                        plots.append(imageio.imread(self._PNG_DIR_ + '/bo_iteration_%d.png' % (i)))
                     except: pass
-            imageio.mimsave('figures/gif/bo.gif', plots, duration=1.0)
+            imageio.mimsave(self._GIF_DIR_ + '/bo.gif', plots, duration=1.0)
         else:
             for a in range(self.n_workers):
                 plots = []
                 for i in range(n_iters+1):
                     if plot is True or i == n_iters:
                         try:
-                            plots.append(imageio.imread('figures/png/bo_iteration_%d_agent_%d.png' % (i, a)))
+                            plots.append(imageio.imread(self._PNG_DIR_ + '/bo_iteration_%d_agent_%d.png' % (i, a)))
                         except: pass
                     elif not i % plot:
                         try:
-                            plots.append(imageio.imread('figures/png/bo_iteration_%d_agent_%d.png' % (i, a)))
+                            plots.append(imageio.imread(self._PNG_DIR_ + '/bo_iteration_%d_agent_%d.png' % (i, a)))
                         except: pass
-                imageio.mimsave('figures/gif/bo_agent_%d.gif' % (a), plots, duration=1.0)
+                imageio.mimsave(self._GIF_DIR_ + '/bo_agent_%d.gif' % (a), plots, duration=1.0)
