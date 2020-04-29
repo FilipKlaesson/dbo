@@ -18,8 +18,7 @@ source ~/.zshrc
 
 2. Install python dependencies and dbo
 ```bash
-git clone git@github.com:FilipKlaesson/dbo.git
-cd dbo
+git clone git@github.com:FilipKlaesson/dbo.git && cd dbo
 pip install -r requirements.txt
 python setup.py install
 ```
