@@ -18,7 +18,7 @@ num_agents = 1
 N = np.eye(3)
 N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
 
-# Bayesian optimimzation object
+# Bayesian optimization object
 BO = bayesian_optimization( obj = obj_fun,
                             domain = domain,
                             arg_max = arg_max,

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sklearn.gaussian_process as gp
+import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 
 # Set numpy random seed
@@ -17,12 +17,12 @@ num_agents = 1
 N = np.eye(3)
 N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
 
-# Bayesian optimimzation object
+# Bayesian optimization object
 BO = bayesian_optimization( obj = obj_fun,
                             domain = domain,
                             n_workers = num_agents,
                             network = None,
-                            kernel = gp.kernels.RBF(length_scale_bounds=(1, 1000)),
+                            kernel = kernels.RBF(length_scale_bounds=(1, 1000)),
                             acquisition_function = 'ei',
                             stochastic_policy = False,
                             regularization = None,
