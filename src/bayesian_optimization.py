@@ -87,14 +87,14 @@ class bayesian_optimization:
         # Directory setup
         self._DT_ = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
         self._ROOT_DIR_ = os.path.dirname(os.path.dirname( __file__ ))
-        self._OUTPUT_DIR_ = os.path.join(self._ROOT_DIR_, "output")
-        self._ID_DIR_ = os.path.join(self._OUTPUT_DIR_, self._DT_)
+        self._TEMP_DIR_ = os.path.join(self._ROOT_DIR_, "temp")
+        self._ID_DIR_ = os.path.join(self._TEMP_DIR_, self._DT_)
         self._DATA_DIR_ = os.path.join(self._ID_DIR_, "data")
         self._FIG_DIR_ = os.path.join(self._ID_DIR_, "fig")
         self._PNG_DIR_ = os.path.join(self._FIG_DIR_, "png")
         self._PDF_DIR_ = os.path.join(self._FIG_DIR_, "pdf")
         self._GIF_DIR_ = os.path.join(self._FIG_DIR_, "gif")
-        for path in [self._OUTPUT_DIR_, self._DATA_DIR_, self._FIG_DIR_, self._PNG_DIR_, self._PDF_DIR_, self._GIF_DIR_]:
+        for path in [self._TEMP_DIR_, self._DATA_DIR_, self._FIG_DIR_, self._PNG_DIR_, self._PDF_DIR_, self._GIF_DIR_]:
             try:
                 os.makedirs(path)
             except FileExistsError:
