@@ -20,7 +20,8 @@ deactivate #deactivate venv
 
 2. Install python dependencies and dbo
 ```
-cd dbo_path/
+git clone git@github.com:FilipKlaesson/dbo.git
+cd dbo
 pip install -r requirements.txt
 python setup.py install
 ```
