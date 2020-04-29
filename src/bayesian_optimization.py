@@ -105,10 +105,10 @@ class bayesian_optimization:
         if self.arg_max is None:
             obj_grid = [self.objective(i) for i in self.grid]
             self.arg_max = self.grid[np.array(obj_grid).argmax(), :]
-        self.maximum = self.objective(self.arg_max)
+        self.max = self.objective(self.arg_max)
 
     def regret(self, y):
-        self.simple_regret.append(self.maximum - y)
+        self.simple_regret.append(self.max - y)
 
     def save_data(self):
         with open(self._DATA_DIR_ + '/regret.csv', 'w', newline='') as file:
