@@ -4,20 +4,13 @@ import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 from src.benchmark_functions import *
 
-# Set numpy random seed
+# Set seed
 np.random.seed(0)
 
-# Domain
-domain = np.array([[-5, 5], [-5, 5]])
-
-# Objective function
-obj_fun = lambda x: (0.4 * np.exp(-((x[0]+2)**2 + (x[1]+4)**2)/4**2) + \
-                    0.3 * np.exp(-((x[0]-3)**2 + (x[1]-1)**2)/2**2) + \
-                    0.3 * np.exp(-((x[0]+3)**2 + (x[1]-3)**2)/5**2))
-
+# Benchmark Function
 fun = Bohachevsky_1()
 domain = fun.domain
-obj_fun = fun.function
+obj_fun = lambda x: -1*fun.function(x)
 
 # Communication network
 num_agents = 3
