@@ -1,13 +1,7 @@
 # use with `pip install -r requirements.txt`
 
-networkx
+numpy
 matplotlib
 scipy
 nose
 sklearn
-colorama
-dataclasses
-pygraphviz #need graphviz to be installed
-
-# Require Graphviz, install PyGraphviz using: easy_install pygraphviz
-# Simulations require ffmpeg
