@@ -30,6 +30,6 @@ BO = bayesian_optimization( obj = obj_fun,
                             grid_density = 1000 )
 
 # Optimize
-BO.optimize(n_iters = 10, n_pre_samples = 1, random_search = 1000, plot = False)
+BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 1, random_search = 1000, plot = True)
 for a in range(BO.n_workers):
-    print("Predicted optimum {}: {}".format(a, BO.predicted_optimum[a]))
+    print("Predicted max {}: {}".format(a, BO.pre_max[a]))

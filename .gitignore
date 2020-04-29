@@ -4,3 +4,4 @@ __pycache__
 *.gif
 *.DS_Store
 *.egg-info
+*.csv
