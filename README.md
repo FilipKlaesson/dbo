@@ -10,11 +10,10 @@ virtualenv -p python3 ~/.venvs/dboenv
 source ~/.venvs/dboenv/bin/activate
 ```
 
-2. (Optional) Set up alias for environment
+2. (Optional) Set up alias for virtual environment
 ```bash
 echo 'alias dboenv="source ~/.venvs/dboenv/bin/activate"' >> ~/.zshrc
 source ~/.zshrc  
-dboenv
 ```
 
 2. Install python dependencies and dbo
