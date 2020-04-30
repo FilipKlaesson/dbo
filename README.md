@@ -42,30 +42,33 @@ The Bayesian optimizer is contained in the class bayesian_optimization in src/ba
 
 ```python
 class bayesian_optimization(objective, domain, arg_max = None, n_workers = 1,
-network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei',
-stochastic_policy = False, regularization = None, regularization_strength = 0.01, grid_density = 100)
+                            network = None, kernel = kernels.RBF(), alpha=10**(-10),
+                            acquisition_function = 'ei', stochastic_policy = False,
+                            regularization = None, regularization_strength = 0.01,
+                            grid_density = 100)
 ```
 
 The class implementation utilizes sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor) (Algorithm 2.1 of Gaussian Processes for Machine Learning by Rasmussen and Williams) as model on standardized data.
 
 Parameters:
-```
-**objective** : function
+<pre>
+<b>objective</b> : function
 Objective function to be maximized. The function take an input with the same
 dimension as the domain and return a float.
-```
+</pre>
 
 ```
 domain: numpy array
-The compact domain the objective function is maximized over. A np.array of shape (dim, 2) where dim is the dimension of the function space. Each row specify the lower and upper bound of the domain along the corresponding dimension.
+The compact domain the objective function is maximized over. A np.array of shape
+(dim, 2) where dim is the dimension of the function space. Each row specify the
+lower and upper bound of the domain along the corresponding dimension.
 ```
 
 ```
 arg_max: numpy array, optional (default: None)
-The point that maximizes the objective function. A np.array of shape
-(dim,) where dim is the dimension of the function space. If None, arg_max
-will be approximated by arg_max on the grid defined by the domain and
-grid_density.
+The point that maximizes the objective function. A np.array of shape (dim,)
+where dim is the dimension of the function space. If None, arg_max will be
+approximated by arg_max on the grid defined by the domain and grid_density.
 ```
 
 ```
