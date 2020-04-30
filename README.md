@@ -218,6 +218,12 @@ Initialize self.
         Precision tolerance for floats. In case of a "duplicate", randomly sample next query point.
     <b>plot</b>: int
         Plot state every plot number of iteration. If n_runs > 1, plot is disabled.
+
+Runs the optimization algorithm.
+
+n_runs allow multiple runs of the same optimization setting to simplify regret analysis.
+The output regret.csv reports the mean over the n_runs together with the 95% confidence bound error.
+Plots (except regret analysis plot) are disabled when n_runs > 1.
 </pre>
 
  ---
