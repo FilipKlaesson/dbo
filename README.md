@@ -81,7 +81,8 @@ from neighbours in the network.
 <pre>
 <b>network</b>: numpy.ndarray, optional (default: None)
 Binary communication network, a numpy.ndarray of shape (n_workers,n_workers).
-Agent <i>i</i> and <i>j</i> share queries if element (<i>i</i>,<i>j</i>) is non-zero.
+Agent <i>i</i> and <i>j</i> share queries if element (<i>i</i>,<i>j</i>) is non-zero. If None, the
+identity matrix is used, i.e. no communication.
 </pre>
 
 <pre>
