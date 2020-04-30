@@ -267,7 +267,8 @@ Running <b>optimize()</b> will generate the following output:
 
     * Gif of the progress in the optimization algorithm      (.gif)
 
-Plots/gifs (except regret plot) are disabled when n_runs > 1.
+  Plots/gifs (except regret plot) are disabled when n_runs > 1.
+
  ---
 
 # Examples
