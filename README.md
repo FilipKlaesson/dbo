@@ -223,7 +223,7 @@ Runs the optimization algorithm.
 
 n_runs allow multiple runs of the same optimization setting to simplify regret analysis.
 The output regret.csv reports the mean over the n_runs together with the 95% confidence bound error.
-Plots (except regret analysis plot) are disabled when n_runs > 1.
+Plots (except regret plot) are disabled when n_runs > 1.
 </pre>
 
 
@@ -257,7 +257,7 @@ Running <b>optimize()</b> will generate the following output:
 
 * regret
 
-    * Report with mean regret over the n_runs together with the 95% confidence bound error (.csv)
+    * File with mean regret over the n_runs together with the 95% confidence bound error (.csv)
 
     * Plots of mean regret together with 95% confidence bounds (.png/.pdf)
 
@@ -267,6 +267,7 @@ Running <b>optimize()</b> will generate the following output:
 
     * Gif of the progress in the optimization algorithm      (.gif)
 
+Plots/gifs (except regret plot) are disabled when n_runs > 1.
  ---
 
 # Examples
