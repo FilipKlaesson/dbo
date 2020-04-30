@@ -4,7 +4,7 @@ import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 
 # Set numpy random seed
-np.random.seed(0)
+np.random.seed(2)
 
 # Domain
 domain = np.array([[-10, 10]])
@@ -27,9 +27,9 @@ BO = bayesian_optimization( objective = obj_fun,
                             stochastic_policy = False,
                             regularization = None,
                             regularization_strength = 0.01,
-                            grid_density = 1000 )
+                            grid_density = 100 )
 
 # Optimize
-BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 1, random_search = 1000, plot = True)
+BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 3, random_search = 1000, plot = True)
 for a in range(BO.n_workers):
     print("Predicted max {}: {}".format(a, BO.pre_max[a]))

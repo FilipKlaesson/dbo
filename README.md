@@ -265,25 +265,26 @@ Plots and gifs (except regret plot) are disabled when n_runs > 1.
 Single-agent 1D example
 
 ```python
-import sklearn.gaussian_process as gp
+import numpy as np
+import matplotlib.pyplot as plt
+import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 
 # Domain
 domain = np.array([[-10, 10]])
+
 # Objective function
 obj_fun = lambda x: (x[0]-0.5)*np.sin(x[0])
 
 # Bayesian optimization object
-BO = bayesian_optimization( obj = obj_fun,
+BO = bayesian_optimization( objective = obj_fun,
                             domain = domain,
-                            kernel = gp.kernels.RBF(),
-                            acquisition_function = 'ei'
-                          )
+                            kernel = kernels.RBF(),
+                            acquisition_function = 'ei',
+                            grid_density = 100)
 
 # Optimize
-BO.optimize(n_iters = 20, n_pre_samples = 3)
-for a in range(BO.n_workers):
-    print("Predicted max {}: {}".format(a, BO.pre_max[a]))
+BO.optimize(n_iters = 10, n_pre_samples = 3)
 ```
 
 Single-agent 1D regret analysis example
