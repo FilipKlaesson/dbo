@@ -221,10 +221,7 @@ Initialize self.
         Plot state every plot number of iteration. If n_runs > 1, plot is disabled.
 
 Runs the optimization algorithm.
-
-n_runs allow multiple runs of the same optimization setting to simplify regret analysis.
-The output regret.csv reports the mean over the n_runs together with the 95% confidence bound error.
-Plots (except regret plot) are disabled when n_runs > 1.
+Parameter n_runs allow multiple runs of the same optimization setting to simplify analysis.
 </pre>
 
 
@@ -234,23 +231,14 @@ The output (generated data/plots/gifs) will be stored in the **temp** folder key
 
 ```
 dbo
-│
 └───examples
-│
 └───src  
-│
 └───temp
-    │
     └───YYYY-MM-DD_HH:MM:SS
-        │   
         └───data
-        │
         └───fig
-            │
             └───png
-            │
             └───pdf
-            │
             └───gif
 ```
 
@@ -268,7 +256,7 @@ Running <b>optimize()</b> will generate the following output:
 
     * Gif of the progress in the optimization algorithm      (.gif)
 
-  Plots/gifs (except regret plot) are disabled when n_runs > 1.
+Plots and gifs (except regret plot) are disabled when n_runs > 1.
 
  ---
 
