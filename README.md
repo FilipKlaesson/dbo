@@ -229,7 +229,7 @@ Plots (except regret analysis plot) are disabled when n_runs > 1.
 
 ### Output
 
-The output (generated data/plots/gifs) will be stored in the **temp** folder:
+The output (generated data/plots/gifs) will be stored in the **temp** folder keyed with date and time:
 
 ```
 dbo
@@ -257,13 +257,15 @@ Running <b>optimize()</b> will generate the following output:
 
 1. regret
 
-⋅⋅⋅Reports the mean over the n_runs together with the 95% confidence bound error (.csv)
-⋅⋅⋅Plot of the mean regret together with 95% confidence bounds (.png/.pdf)
+    Reports the mean over the n_runs together with the 95% confidence bound error (.csv)
+
+    Plot of the mean regret together with 95% confidence bounds (.png/.pdf)
 
 2. bo*
 
-⋅⋅⋅Plots of every iteration in the optimization algorithm (.png/.pdf)
-⋅⋅⋅Gif of the progress in the optimization algorithm      (.gif)
+    Plots of every iteration in the optimization algorithm (.png/.pdf)
+
+    Gif of the progress in the optimization algorithm      (.gif)
 
  ---
 
