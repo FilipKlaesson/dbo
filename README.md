@@ -203,19 +203,19 @@ Initialize self.
 <pre>
 <b>optimize</b>(n_iters, n_runs = 1, x0 = None, n_pre_samples = 5,
                 random_search = 100, epsilon = 10**(-7), plot = False)
-n_iters: int
+<b>n_iters</b>: int
     Number of iterations to run the optimization algorithm.
-n_runs: int, optional (default: 1)
+<b>n_runs</b>: int, optional (default: 1)
     Number of optimization runs.
-x0: numpy.ndarray, optional (default: None)
+<b>x0</b>: numpy.ndarray, optional (default: None)
     Array with shape (n_pre_samples, n_params) containing initial points.
-n_pre_samples: int, optional (default: 5)
+<b>n_pre_samples</b>: int, optional (default: 5)
     If x0 is None, sample n_pre_samples initial points uniformly random in the domain.
-random_search: int, optional (default: 100)
+<b>random_search</b>: int, optional (default: 100)
     Number of samples used in random search to optimize acquisition function.
-epsilon: double, optional (default: 10**(-7))
+<b>epsilon</b>: double, optional (default: 10**(-7))
     Precision tolerance for floats. In case of a "duplicate", randomly sample next query point.
-plot: int
+<b>plot</b>: int
     Plot state every plot number of iteration. If n_runs > 1, plot is disabled.
 </pre>
 
