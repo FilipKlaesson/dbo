@@ -287,7 +287,7 @@ BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 ```
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif" width="600" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif" height="800" />
 </p>
 
 ---
@@ -320,44 +320,5 @@ BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 3, plot = True)
 ```
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo_agent_0.gif" width="600" />
-</p>
-
----
-
-Multi-agent 2D example
-
-```python
-import sklearn.gaussian_process.kernels as kernels
-from src.bayesian_optimization import bayesian_optimization
-from src.benchmark_functions_2D import *
-
-# Benchmark function
-fun = Bohachevsky_1()
-domain = fun.domain
-obj_fun = lambda x: -1*fun.function(x)
-
-# Communication network
-num_agents = 3
-N = np.eye(3)
-N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
-
-# Bayesian optimization object
-BO = bayesian_optimization( obj = obj_fun,
-                            domain = domain,
-                            n_workers = num_agents,
-                            network = N,
-                            kernel = kernels.RBF(),
-                            acquisition_function = 'ei',
-                            grid_density = 30
-                          )
-
-# Optimize
-BO.optimize(n_iters = 20, n_pre_samples = 3)
-for a in range(BO.n_workers):
-    print("Predicted max {}: {}".format(a, BO.pre_max[a]))
-```
-
-<p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo_agent_0.gif" width="600" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo_agent_0.gif" height="800" />
 </p>
