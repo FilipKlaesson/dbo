@@ -52,7 +52,7 @@ class bayesian_optimization(objective, domain, arg_max = None, n_workers = 1,
 
 The class implementation utilizes sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor) (Algorithm 2.1 of Gaussian Processes for Machine Learning by Rasmussen and Williams) as model on standardized data.
 
-## Parameters:
+### Parameters:
 
 <pre>
 <b>objective</b>: function
@@ -132,7 +132,7 @@ Constant multiplied to regularization function, controls the magnitude of the pe
 Number of points in each dimension in the grid.
 </pre>
 
-## Attributes:
+### Attributes:
 
 <pre>
 <b>arg_max</b>: numpy.ndarray
@@ -189,7 +189,7 @@ All function values used for training by agent <i>i</i> is contained in Y_train[
 </pre>
 
 
-## Methods
+### Methods
 
 <pre>
 <b>__init__</b>(objective, domain, arg_max = None, n_workers = 1,
