@@ -232,7 +232,7 @@ class bayesian_optimization:
             x = x[np.argmax(ts), :]
         return x
 
-    def optimize(self, n_iters, n_runs = 1, x0=None, n_pre_samples=5, random_search=100, alpha=1e-5, epsilon=1e-7, plot = False):
+    def optimize(self, n_iters, n_runs = 1, x0=None, n_pre_samples=5, random_search=100, epsilon=1e-7, plot = False):
         """
         Arguments:
         ----------
@@ -245,8 +245,6 @@ class bayesian_optimization:
                 If x0 is None, samples `n_pre_samples` initial points.
             random_search: integer.
                 Flag that indicates whether to perform random search or L-BFGS-B to optimize the acquisition function.
-            alpha: double.
-                Variance of the error term of the GP.
             epsilon: double.
                 Precision tolerance for floats.
             plot: bool or integer
@@ -319,7 +317,6 @@ class bayesian_optimization:
                     x = self.find_next_query(n, a, self.model[a], random_search)
                     self._next_query[a] = x
 
-                    # Non-positive definite covariance matrix break the Gaussian process.
                     # In case of a "duplicate", randomly sample a next query point.
                     if np.any(np.abs(x - self.model[a].X_train_) <= epsilon):
                         x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], self.domain.shape[0])
