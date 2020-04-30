@@ -287,7 +287,7 @@ BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 ```
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif" height="800" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif" height="500" />
 </p>
 
 ---
