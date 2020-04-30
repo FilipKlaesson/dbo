@@ -266,7 +266,6 @@ Single-agent 1D example
 
 ```python
 import numpy as np
-import matplotlib.pyplot as plt
 import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 
@@ -284,7 +283,7 @@ BO = bayesian_optimization( objective = obj_fun,
                             grid_density = 100)
 
 # Optimize
-BO.optimize(n_iters = 10, n_pre_samples = 3)
+BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 ```
 
 <p align="center">
@@ -293,53 +292,38 @@ BO.optimize(n_iters = 10, n_pre_samples = 3)
 
 ---
 
-Single-agent 1D regret analysis example
-
-```python
-import sklearn.gaussian_process.kernels as kernels
-from src.bayesian_optimization import bayesian_optimization
-
-# Domain
-domain = np.array([[-10, 10]])
-# Objective function
-obj_fun = lambda x: (x[0]-0.5)*np.sin(x[0])
-
-# Bayesian optimization object
-BO = bayesian_optimization( obj = obj_fun,
-                            domain = domain,
-                            kernel = gp.kernels.RBF(),
-                            acquisition_function = 'ei'
-                          )
-
-# Optimize
-BO.optimize(n_iters = 20, n_runs = 10, n_pre_samples = 3)
-```
-
 Single-agent 2D example
 
 ```python
+import numpy as np
 import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 from src.benchmark_functions_2D import *
 
-# Benchmark function
+# Benchmark Function
 fun = Bohachevsky_1()
 domain = fun.domain
 obj_fun = lambda x: -1*fun.function(x)
+arg_max = fun.arg_min
 
 # Bayesian optimization object
-BO = bayesian_optimization( obj = obj_fun,
+BO = bayesian_optimization( objective = obj_fun,
                             domain = domain,
+                            arg_max = arg_max,
                             kernel = kernels.RBF(),
                             acquisition_function = 'ei',
-                          )
+                            grid_density = 30)
 
 # Optimize
-BO.optimize(n_iters = 20, n_pre_samples = 3)
-for a in range(BO.n_workers):
-    print("Predicted max {}: {}".format(a, BO.pre_max[a]))
+BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 3, plot = True)
+
 ```
 
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo_agent_0.gif" width="600" />
+</p>
+
+---
 
 Multi-agent 2D example
 
@@ -373,3 +357,7 @@ BO.optimize(n_iters = 20, n_pre_samples = 3)
 for a in range(BO.n_workers):
     print("Predicted max {}: {}".format(a, BO.pre_max[a]))
 ```
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo_agent_0.gif" width="600" />
+</p>

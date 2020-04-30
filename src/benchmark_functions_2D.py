@@ -10,7 +10,7 @@ class Bohachevsky_1:
 class Rosenbrock:
     def __init__(self):
         self.domain = np.array([[-5, 10], [-5, 10]])
-        self.function = lambda x: 100*(x[1]-x[0]^2)**2 + (1-x[0])**2
+        self.function = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
         self.min = 0
         self.arg_min = np.array([1, 1])
 

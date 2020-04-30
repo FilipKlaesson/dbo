@@ -1,14 +1,13 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
 from src.benchmark_functions_2D import *
 
 # Set seed
-np.random.seed(0)
+np.random.seed(2)
 
 # Benchmark Function
-fun = Bohachevsky_1()
+fun = Rosenbrock()
 domain = fun.domain
 obj_fun = lambda x: -1*fun.function(x)
 arg_max = fun.arg_min
@@ -32,6 +31,6 @@ BO = bayesian_optimization( objective = obj_fun,
                             grid_density = 30)
 
 # Optimize
-BO.optimize(n_iters = 10, n_runs = 2, n_pre_samples = 3, random_search = 1000, plot = True)
+BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 3, random_search = 1000, plot = True)
 for a in range(BO.n_workers):
     print("Predicted max {}: {}".format(a, BO.pre_max[a]))
