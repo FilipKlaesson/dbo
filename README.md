@@ -229,47 +229,41 @@ Plots (except regret analysis plot) are disabled when n_runs > 1.
 
 ### Output
 
-The output (generated data/plots/gifs) will be stored in the **temp**:
-
-.
-+-- _config.yml
-+-- _drafts
-|   +-- begin-with-the-crazy-ideas.textile
-|   +-- on-simplicity-in-technology.markdown
-+-- _includes
-|   +-- footer.html
-|   +-- header.html
-+-- _layouts
-|   +-- default.html
-|   +-- post.html
-+-- _posts
-|   +-- 2007-10-29-why-every-programmer-should-play-nethack.textile
-|   +-- 2009-04-26-barcamp-boston-4-roundup.textile
-+-- _data
-|   +-- members.yml
-+-- _site
-+-- index.html
+The output (generated data/plots/gifs) will be stored in the **temp** folder:
 
 ```
-project
-│   README.md
-│   file001.txt    
+dbo
 │
-└───folder1
-│   │   file011.txt
-│   │   file012.txt
-│   │
-│   └───subfolder1
-│       │   file111.txt
-│       │   file112.txt
-│       │   ...
-│   
-└───folder2
-    │   file021.txt
-    │   file022.txt
+└───examples
+│
+└───src  
+│
+└───temp
+    │
+    └───YYYY-MM-DD_HH:MM:SS
+        │   
+        └───data
+        │
+        └───fig
+            │
+            └───png
+            │
+            └───pdf
+            │
+            └───gif
 ```
 
+Running <b>optimize()</b> will generate the following output:
 
+1. regret
+
+⋅⋅⋅Reports the mean over the n_runs together with the 95% confidence bound error (.csv)
+⋅⋅⋅Plot of the mean regret together with 95% confidence bounds (.png/.pdf)
+
+2. bo*
+
+⋅⋅⋅Plots of every iteration in the optimization algorithm (.png/.pdf)
+⋅⋅⋅Gif of the progress in the optimization algorithm      (.gif)
 
  ---
 
