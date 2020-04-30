@@ -10,6 +10,7 @@ author: filipkl@kth.se
     1. [Parameters](#parameters)
     2. [Attributes](#attributes)
     3. [Methods](#methods)
+    4. [Output](#Output)
 3. [Examples](#examples)
 
 ---
