@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
-from src.benchmark_functions import *
+from src.benchmark_functions_2D import *
 
 # Set seed
 np.random.seed(0)

@@ -325,7 +325,7 @@ Single-agent 2D example
 ```python
 import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
-from src.benchmark_functions import *
+from src.benchmark_functions_2D import *
 
 # Benchmark function
 fun = Bohachevsky_1()
@@ -351,7 +351,7 @@ Multi-agent 2D example
 ```python
 import sklearn.gaussian_process.kernels as kernels
 from src.bayesian_optimization import bayesian_optimization
-from src.benchmark_functions import *
+from src.benchmark_functions_2D import *
 
 # Benchmark function
 fun = Bohachevsky_1()

@@ -347,7 +347,7 @@ class bayesian_optimization:
         # Save data
         self.save_data(data = [r_mean, conf95], name = 'regret')
 
-        # Generate GIF
+        # Generate gif
         if n_runs == 1:
             if plot is not False:
                 self.generate_gif(n_iters, plot)
