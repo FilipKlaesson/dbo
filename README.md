@@ -52,60 +52,65 @@ The class implementation utilizes sklearn [GaussianProcessRegressor](https://sci
 
 Parameters:
 <pre>
-<b>objective</b> : function
+<b>objective</b>: function
 Objective function to be maximized. The function take an input with the same
 dimension as the domain and return a float.
 </pre>
 
-```
-domain: numpy array
-The compact domain the objective function is maximized over. A np.array of shape
-(dim, 2) where dim is the dimension of the function space. Each row specify the
+<pre>
+<b>domain</b>: numpy.ndarray
+The compact domain the objective function is maximized over. A numpy.ndarray of
+shape (dim, 2) where dim is the dimension of the function space. Each row specify the
 lower and upper bound of the domain along the corresponding dimension.
-```
+</pre>
 
-```
-arg_max: numpy array, optional (default: None)
-The point that maximizes the objective function. A np.array of shape (dim,)
+<pre>
+<b>arg_max</b>: numpy.ndarray, optional (default: None)
+The point that maximizes the objective function. A numpy.ndarray of shape (dim,)
 where dim is the dimension of the function space. If None, arg_max will be
 approximated by arg_max on the grid defined by the domain and grid_density.
-```
+</pre>
 
-```
-n_workers = 1
-```
+<pre>
+<b>n_workers</b>: float, optional (default: 1)
+Number of agents used in the distributed setting. Corresponds to the number of
+models trained in parallel using corresponding agent queries and data broadcasted
+from neighbours in the network.
+</pre>
 
-```
-network = None
-```
+<pre>
+<b>network</b>: numpy.ndarray, optional (default: None)
+Binary communication network, a numpy.ndarray of shape (n_workers,n_workers).
+Agent <i>i</i> and <i>j</i> share queries if element (<i>i</i>,<i>j</i>) is non-zero.
+</pre>
 
-```
-kernel = kernels.RBF()
-```
+<pre>
+<b>kernel</b> = kernels.RBF()
+</pre>
 
-```
-alpha=10**(-10)
-```
+<pre>
+<b>alpha</b>=10**(-10)
+</pre>
 
-```
-acquisition_function = 'ei'
-```
+<pre>
+<b>acquisition_function</b> = 'ei'
+</pre>
 
-```
-stochastic_policy = False
-```
+<pre>
+<b>stochastic_policy</b> = False
+</pre>
 
-```
-regularization = None
-```
+<pre>
+<b>regularization</b> = None
+</pre>
 
-```
-regularization_strength = 0.01
-```
+<pre>
+<b>regularization_strength</b> = 0.01
+</pre>
 
-```
-grid_density = 100
-```
+<pre>
+<b>grid_density</b> = 100
+</pre>
 
 
  ---
