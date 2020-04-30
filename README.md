@@ -6,9 +6,8 @@ author: filipkl@kth.se
 
 # Table of Contents
 1. [Installation](#setup-instructions-for-debian-like-environments)
-2. [Usage](#usage)
+2. [Docs](#docs)
 3. [Examples](#examples)
-4. [Credits](#credits)
 
 ---
 # Setup instructions for Debian-like environments
@@ -36,7 +35,7 @@ python setup.py install
 
 ---
 
-# Usage
+# Docs
 
 The Bayesian optimizer is contained in the class bayesian_optimization in src/bayesian_optimization.
 
@@ -222,15 +221,3 @@ BO.optimize(n_iters = 20, n_pre_samples = 3)
 for a in range(BO.n_workers):
     print("Predicted max {}: {}".format(a, BO.pre_max[a]))
 ```
-
----
-
-# Credits
-
-[Filip Klaesson](https://filipklaesson.github.io/)
-
-[Na Li](https://nali.seas.harvard.edu/)
-
-Runyu Zhang
-
-[Petter Nilsson](https://pettni.github.io/#/)
