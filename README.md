@@ -255,17 +255,17 @@ dbo
 
 Running <b>optimize()</b> will generate the following output:
 
-1. regret
+* regret
 
-    Reports the mean over the n_runs together with the 95% confidence bound error (.csv)
+    * Report with mean regret over the n_runs together with the 95% confidence bound error (.csv)
 
-    Plot of the mean regret together with 95% confidence bounds (.png/.pdf)
+    * Plots of mean regret together with 95% confidence bounds (.png/.pdf)
 
-2. bo*
+* bo*
 
-    Plots of every iteration in the optimization algorithm (.png/.pdf)
+    * Plots of every iteration in the optimization algorithm (.png/.pdf)
 
-    Gif of the progress in the optimization algorithm      (.gif)
+    * Gif of the progress in the optimization algorithm      (.gif)
 
  ---
 
