@@ -81,37 +81,52 @@ from neighbours in the network.
 <b>network</b>: numpy.ndarray, optional (default: None)
 Binary communication network, a numpy.ndarray of shape (n_workers,n_workers).
 Agent <i>i</i> and <i>j</i> share queries if element (<i>i</i>,<i>j</i>) is non-zero. If None, the
-identity matrix is used, i.e. no communication.
+identity matrix is used.
 </pre>
 
 <pre>
-<b>kernel</b> = kernels.RBF()
+<b>kernel</b>: kernel object, optional (default: kernels.RBF())
+The kernel (sklearn.gaussian_process.kernels object) specifying the covariance
+function of the Gaussian Process. The kernel’s hyperparameters are optimized
+using the log-marginal likelihood for training data.
 </pre>
 
 <pre>
-<b>alpha</b>=10**(-10)
+<b>alpha</b>: float, optional (default: 10**(-10))
+Noise level in observations. Alpha is added to the diagonal of the kernel.
+An increased noise level can prevent potential numerical issues by ensuring that
+the covariance matrix is a positive definite matrix.
 </pre>
 
 <pre>
-<b>acquisition_function</b> = 'ei'
+<b>acquisition_function</b>: str, optional (default: 'ei')
+The acquisition function used to select the next query. Supported acquisition
+functions: 'ei' (Expected Improvement), 'ts' (Thompson Sampling).
 </pre>
 
 <pre>
-<b>stochastic_policy</b> = False
+<b>stochastic_policy</b> bool, optional (default: False)
+Whether to use stochastic policy or greedy policy when selecting next query.
+If True, draw the next query from a Boltzmann distribution where the acquisition
+function acts as energy measure. If False, next query is argmax of acquisition function.
 </pre>
 
 <pre>
-<b>regularization</b> = None
+<b>regularization</b>: str, optional (default: None)
+The regularization function used when selecting next query. The regularization
+penalizes the distance from the previous query point. Supported regularization
+functions: 'ridge' (Ridge/L2). If None, no regularization will be applied.
 </pre>
 
 <pre>
-<b>regularization_strength</b> = 0.01
+<b>regularization_strength</b>: float, optional (default: 0.01)
+Constant multiplied to regularization function, controls the magnitude of the penalty.
 </pre>
 
 <pre>
-<b>grid_density</b> = 100
+<b>grid_density</b>: int, optional (default: 100)
+Number of points in each dimension in the grid.
 </pre>
-
 
  ---
 
