@@ -8,7 +8,6 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import sklearn.gaussian_process as gp
 
 from tqdm import tqdm
 from matplotlib import cm
@@ -17,14 +16,15 @@ from scipy.optimize import minimize
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from sklearn.preprocessing import StandardScaler
+from sklearn.gaussian_process import kernels, GaussianProcessRegressor
 
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, obj, domain, arg_max = None, n_workers = 1, network = None, kernel = gp.kernels.RBF(), noise=10**(-10), acquisition_function = 'ei', stochastic_policy = False, regularization = None, l = 0.01, grid_density = 30):
+    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', stochastic_policy = False, regularization = None, regularization_strength = 0.01, grid_density = 100):
 
         # Optimization setup
-        self.objective = obj
+        self.objective = objective
         self.n_workers = n_workers
         if network is None:
             self.network = np.eye(n_workers)
@@ -66,12 +66,12 @@ class bayesian_optimization:
             self.arg_max = self._grid[np.array(obj_grid).argmax(), :]
 
         # Model Setup
-        self.noise = noise
+        self.alpha = alpha
         self.kernel = kernel
-        self._l = l
+        self._regularization_strength = regularization_strength
         self._stochastic_policy = stochastic_policy
-        self.model = [gp.GaussianProcessRegressor(  kernel=self.kernel,
-                                                    alpha=self.noise,
+        self.model = [GaussianProcessRegressor(  kernel=self.kernel,
+                                                    alpha=self.alpha,
                                                     n_restarts_optimizer=10)
                                                     for i in range(self.n_workers) ]
         self.scaler = [StandardScaler() for i in range(n_workers)]
@@ -107,7 +107,7 @@ class bayesian_optimization:
         r_std = [np.std(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
         # 95% confidence interval
         conf95 = [1.96*rst/self._simple_regret.shape[0] for rst in r_std]
-        return r_mean, conf95, info
+        return r_mean, conf95
 
     def save_data(self, data, name):
         with open(self._DATA_DIR_ + '/' + name + '.csv', 'w', newline='') as file:
@@ -117,7 +117,7 @@ class bayesian_optimization:
         return
 
     def ridge(self, x, center = 0):
-        return self._l * np.linalg.norm(x - center)
+        return self._regularization_strength * np.linalg.norm(x - center)
 
     def expected_improvement(self, model, x, a, epsilon = 0.01):
         """
@@ -265,8 +265,8 @@ class bayesian_optimization:
             self.Y_train =[[] for i in range(self.n_workers)]
             self.X = [[] for i in range(self.n_workers)]
             self.Y = [[] for i in range(self.n_workers)]
-            self.model = [gp.GaussianProcessRegressor(  kernel=self.kernel,
-                                                        alpha=self.noise,
+            self.model = [GaussianProcessRegressor(  kernel=self.kernel,
+                                                        alpha=self.alpha,
                                                         n_restarts_optimizer=10)
                                                         for i in range(self.n_workers) ]
 
