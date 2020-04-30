@@ -13,7 +13,7 @@ author: filipkl@kth.se
 3. [Examples](#examples)
 
 ---
-# Setup instructions for Debian-like environments
+# Installation (Debian-like environments)
 
 This package is developed for Python 3.7.
 
