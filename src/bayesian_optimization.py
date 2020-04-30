@@ -33,9 +33,9 @@ class bayesian_optimization:
 
         # Acquisition function
         if acquisition_function == 'ei':
-            self.acquisition_function = self.expected_improvement
+            self._acquisition_function = self.expected_improvement
         elif acquisition_function == 'ts':
-            self.acquisition_function = self.thompson_sampling
+            self._acquisition_function = self.thompson_sampling
         else:
             print('Supported acquisition functions: ei, ts')
             return
@@ -77,7 +77,6 @@ class bayesian_optimization:
         self.scaler = [StandardScaler() for i in range(n_workers)]
 
         # Data holders
-        self.pre_max = None
         self.bc_data = None
         self.X_train = self.Y_train = None
         self.X = self.Y = None
@@ -220,7 +219,7 @@ class bayesian_optimization:
                 Number of random samples used to optimize the acquisition function. Default 1000
         """
         x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], size=(random_search, self._dim))
-        if self.acquisition_function == self.expected_improvement:
+        if self._acquisition_function == self.expected_improvement:
             ei = - self.expected_improvement(model, x, a)
             #Stochastic Boltzmann Policy
             if self._stochastic_policy:
@@ -338,8 +337,10 @@ class bayesian_optimization:
                     elif not n % plot:
                         self.plot_iteration(n)
 
+        self.pre_arg_max = []
         self.pre_max = []
         for a in range(self.n_workers):
+            self.pre_arg_max.append(np.array(self.model[a].y_train_).argmax())
             self.pre_max.append(self.model[a].X_train_[np.array(self.model[a].y_train_).argmax()])
 
         # Compute and plot regret
@@ -370,7 +371,7 @@ class bayesian_optimization:
             mu_a, std_a = self.model[a].predict(self._grid, return_std=True)
             mu.append(mu_a)
             std.append(std_a)
-        if self.acquisition_function == self.expected_improvement:
+        if self._acquisition_function == self.expected_improvement:
             acq = [-1 * self.expected_improvement(self.model[a], self._grid, a) for a in range(self.n_workers)]
         else:
             acq = [-1 * self._thompson_samples[a][n] for a in range(self.n_workers)]

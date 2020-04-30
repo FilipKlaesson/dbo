@@ -49,7 +49,8 @@ class bayesian_optimization(objective, domain, arg_max = None, n_workers = 1,
 
 The class implementation utilizes sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor) (Algorithm 2.1 of Gaussian Processes for Machine Learning by Rasmussen and Williams) as model on standardized data.
 
-Parameters:
+### Parameters:
+
 <pre>
 <b>objective</b>: function
 Objective function to be maximized. The function take an input with the same
@@ -126,6 +127,80 @@ Constant multiplied to regularization function, controls the magnitude of the pe
 <pre>
 <b>grid_density</b>: int, optional (default: 100)
 Number of points in each dimension in the grid.
+</pre>
+
+### Attributes:
+
+<pre>
+<b>arg_max</b>: numpy.ndarray
+The point that maximizes the objective function. If not provided under initialization,
+arg_max will be approximated by arg_max on the grid defined by the domain and grid_density.
+</pre>
+
+<pre>
+<b>model</b>: GaussianProcessRegressor list
+List of GaussianProcessRegressor with length n_workers. Contains the models used by
+each agent under training.
+</pre>
+
+<pre>
+<b>pre_arg_max</b>: numpy.ndarray list
+List of predicted argmax with length n_workers. Contains the predicted argmax for
+each agent.
+</pre>
+
+<pre>
+<b>pre_max</b>: numpy.ndarray list
+List of predicted maximum with length n_workers. Contains the predicted max of
+the objective function for each agent.
+</pre>
+
+<pre>
+<b>X</b>: nested lists
+Nested lists of depth 1. Contains lists of queries performed by each agent.
+All queries performed by agent <i>i</i> is contained in X[<i>i</i>].
+</pre>
+
+<pre>
+<b>Y</b>: nested lists
+Nested lists of depth 1. Contains lists of function evaluation for corresponding queries.
+All function evaluations observed by agent <i>i</i> is contained in Y[<i>i</i>].
+</pre>
+
+<pre>
+<b>bc_data</b>: nested lists
+Nested lists of depth 2. Contains tuples (x,y) of broadcasted data between agents.
+All data broadcasted from agent <i>i</i> to agent <i>j</i> is contained in bc_data[<i>i</i>][<i>j</i>].
+</pre>
+
+<pre>
+<b>X_train</b>: nested lists
+Nested lists of depth 1. Contains lists of feature vectors used for training.
+All feature vectors used for training by agent <i>i</i> is contained in X_train[<i>i</i>].
+</pre>
+
+<pre>
+<b>Y_train</b>: nested lists
+Nested lists of depth 1. Contains lists of function values used for training.
+All function values used for training by agent <i>i</i> is contained in Y_train[<i>i</i>].
+</pre>
+
+
+### Methods
+
+<pre>
+<b>__init__</b>(objective, domain, arg_max = None, n_workers = 1,
+                network = None, kernel = kernels.RBF(), alpha=10**(-10),
+                acquisition_function = 'ei', stochastic_policy = False,
+                regularization = None, regularization_strength = 0.01,
+                grid_density = 100)
+Initialize self.
+</pre>
+
+<pre>
+<b>optimize</b>(n_iters, n_runs = 1, x0 = None, n_pre_samples = 5,
+                random_search=100, alpha=1e-5, epsilon=1e-7, plot = False)
+
 </pre>
 
  ---
