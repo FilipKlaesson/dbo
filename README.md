@@ -287,6 +287,10 @@ BO = bayesian_optimization( objective = obj_fun,
 BO.optimize(n_iters = 10, n_pre_samples = 3)
 ```
 
+![Alt Text](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+
+---
+
 Single-agent 1D regret analysis example
 
 ```python
