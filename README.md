@@ -287,7 +287,7 @@ BO = bayesian_optimization( objective = obj_fun,
 BO.optimize(n_iters = 10, n_pre_samples = 3)
 ```
 
-![Alt Text](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+![Alt Text](https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif)
 
 ---
 
