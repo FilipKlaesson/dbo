@@ -18,7 +18,7 @@ N = np.eye(3)
 N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
 
 # Bayesian optimization object
-BO = bayesian_optimization( obj = obj_fun,
+BO = bayesian_optimization( objective = obj_fun,
                             domain = domain,
                             n_workers = num_agents,
                             network = None,
@@ -26,7 +26,7 @@ BO = bayesian_optimization( obj = obj_fun,
                             acquisition_function = 'ei',
                             stochastic_policy = False,
                             regularization = None,
-                            l = 0.01,
+                            regularization_strength = 0.01,
                             grid_density = 1000 )
 
 # Optimize
