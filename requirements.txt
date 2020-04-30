@@ -1,5 +1,3 @@
-# use with `pip install -r requirements.txt`
-
 numpy
 matplotlib
 scipy
