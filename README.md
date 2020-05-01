@@ -14,8 +14,8 @@ author: filipkl@kth.se
 3. [Examples](#examples)
     1. [Example 1: Single-Agent 1D](#example-1-single-agent-1D)
     2. [Example 2: Multi-Agent 1D](#example-2-multi-agent-1D)
-    3. [Example 2: Multi-Agent 1D](#example-3-single-agent-2D)
-    4. [Example 2: Multi-Agent 1D](#example-4-multi-agent-2D)
+    3. [Example 3: Single-Agent 2D](#example-3-single-agent-2D)
+    4. [Example 4: Multi-Agent 2D](#example-4-multi-agent-2D)
 
 ---
 # Installation
