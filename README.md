@@ -567,7 +567,7 @@ for the regret analysis.
 
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via issue or email with the owners of this repository. If you decide to fix an issue, it's advisable to check the comment thread to see if there's somebody already working on a fix. If no one is working on it, kindly leave a comment stating that you intend to work on it. That way other people don't accidentally duplicate your effort. Before sending a merge request, make sure to update the README.md with details of changes to the interface under **Updates**. If you're a first time contributor to **dbo**, add yourself to the Credits list.
+When contributing to this repository, please first discuss the change you wish to make via issue or email with the owners of this repository. If you decide to fix an issue, it's advisable to check the comment thread to see if there's somebody already working on a fix. If no one is working on it, kindly leave a comment stating that you intend to work on it. That way other people don't accidentally duplicate your effort. Before sending a merge request, make sure to update the **README.md** with details of changes to the interface under **Updates**. If you're a first time contributor to **dbo**, add yourself to the **Credits** list.
 
 # Updates
 
