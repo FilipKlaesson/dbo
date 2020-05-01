@@ -32,6 +32,8 @@ The animation below demonstrate the optimization process on Himmelblau's functio
     4. [Example 4: Multi-Agent 2D](#example-4-multi-agent-2D)
     5. [Example 5: Regret Analysis](#example-5-regret-analysis)
     6. [Example 6: Non-convex optimization](#example-6-non-convex-optimization-2D-examples)
+4. [Contributing](#contributing)
+5. [Updates](#updates)
 
 ---
 # Installation
@@ -568,4 +570,4 @@ When contributing to this repository, please first discuss the change you wish t
 
 # Updates
 
-* v.1.0: initial launch: dbo offers distributed and paralell bayesian optimization, stochastic policy evaluations, internal acquisition function regularization, regret analysis outputs etc.
+* v.1.0: initial launch: **dbo** offers distributed and paralell bayesian optimization, stochastic policy evaluations, internal acquisition function regularization, regret analysis outputs etc.
