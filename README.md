@@ -509,40 +509,40 @@ for the regret analysis.
 
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/ackley.gif" height="500" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/ackley_regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/ackley_regret.png" height="500" />
 </p>
 
 ### Eggholder
 
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/eggholder.gif" height="500" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/eggholder_regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/eggholder_regret.png" height="500" />
 </p>
 
 ### Goldstein_Price
 
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/goldstein_price.gif" height="500" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/goldstein_price_regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/goldstein_price_regret.png" height="500" />
 </p>
 
 ### Himmelblau
 
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/himmelblau.gif" height="500" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/himmelblau_regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/himmelblau_regret.png" height="500" />
 </p>
 
 ### Rastrigin
 
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/rastrigin.gif" height="500" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/rastrigin_regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/rastrigin_regret.png" height="500" />
 </p>
 
 ### Rosenbrock
 
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/rosenbrock.gif" height="500" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/rosenbrock_regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/rosenbrock_regret.png" height="500" />
 </p>
