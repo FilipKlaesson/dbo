@@ -451,6 +451,6 @@ Output:
 </p>
 
 The color of the queries indicate which agent performed the evaluation. Note that
-since agent communicate via the network, agents utilize the queries performed by
+since agents communicate via the network, agents utilize the queries performed by
 their neighbours for faster convergence. For example, agent 0 (left figure, blue queries)
 utilize the queries broadcasted from neighbour agent 1 (middle figure, green queries).
