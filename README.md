@@ -439,7 +439,7 @@ BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 Output:
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_0.gif" height="800" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_1.gif" height="800" />
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_2.gif" height="800" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_0.gif" height="600" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_1.gif" height="600" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_2.gif" height="600" />
 </p>
