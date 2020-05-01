@@ -454,3 +454,49 @@ The color of the queries indicate which agent performed the evaluation. Note tha
 since agents communicate via the network, agents utilize the queries performed by
 their neighbours for faster convergence. For example, agent 0 (left figure, blue queries)
 utilize the queries broadcasted from neighbour agent 1 (middle figure, green queries).
+
+
+## Example 5: Single-Agent 2D Regret Analysis
+
+Utilizing the **n_runs** parameter, it is straight-forward to perform regret analysis
+over multiple runs. We demonstrate this by setting **n_iters** = 50 and **n_runs** = 10
+on the single-agent setting described in example 3. Note that plots (except regret plot)
+are automatically disabled when running multiple times.
+
+Example code:
+
+```python
+import numpy as np
+import sklearn.gaussian_process.kernels as kernels
+from src.bayesian_optimization import bayesian_optimization
+from src.benchmark_functions_2D import *
+
+# Benchmark Function
+fun = Bohachevsky_1()
+domain = fun.domain
+obj_fun = lambda x: -1*fun.function(x)
+arg_max = fun.arg_min
+
+# Bayesian optimization object
+BO = bayesian_optimization( objective = obj_fun,
+                            domain = domain,
+                            arg_max = arg_max,
+                            grid_density = 30 )
+
+# Optimize
+BO.optimize(n_iters = 50, n_runs = 10, n_pre_samples = 3)
+
+```
+
+Output:
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf" height="500" />
+</p>
+
+
+<object data="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf" type="application/pdf" height="500px">
+    <embed src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf">Download PDF</a>.</p>
+    </embed>
+</object>

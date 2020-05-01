@@ -118,7 +118,7 @@ class bayesian_optimization:
     def ridge(self, x, center = 0):
         return self._regularization_strength * np.linalg.norm(x - center)
 
-    def expected_improvement(self, model, x, a, epsilon = 0.00000001):
+    def expected_improvement(self, model, x, a, epsilon = 0.001):
         """
         Expected improvement acquisition function.
         Arguments:
