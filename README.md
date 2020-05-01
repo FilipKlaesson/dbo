@@ -395,7 +395,7 @@ BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 Output:
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example3/bo_agent_0.gif" height="800" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example3/bo_agent_0.gif" height="500" />
 </p>
 
 
@@ -493,7 +493,7 @@ BO.optimize(n_iters = 50, n_runs = 10, n_pre_samples = 3)
 Output:
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.png" height="400" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.png" height="300" />
 </p>
 
 The plot display the mean regret over the **n_runs** with a 95% confidence interval.
