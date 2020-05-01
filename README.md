@@ -1,8 +1,8 @@
 # Distributed Bayesian Optimization for Multi-Agent Systems
 
-**dbo** is compact python package for bayesian optimization.
+**dbo** is a compact python package for bayesian optimization.
 It utilizes sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor)
-to model the surrogate function.
+to model the surrogate function and offers multiple strategies to select queries.
 In addition to the vanilla bayesian optimization algorithm, **dbo** offers:
 
 * Distributed and parallel optimization
