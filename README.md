@@ -17,7 +17,7 @@ author: filipkl@kth.se
     3. [Example 3: Single-Agent 2D](#example-3-single-agent-2D)
     4. [Example 4: Multi-Agent 2D](#example-4-multi-agent-2D)
     5. [Example 5: Regret Analysis](#example-5-regret-analysis)
-    6. [Example 6: Non-convex optimization](#example-6-non-convex-optimization)
+    6. [Example 6: Non-convex optimization](#example-6-non-convex-optimization-2D-examples)
 
 ---
 # Installation
@@ -500,7 +500,7 @@ Output:
 The plot display the mean regret over the **n_runs** with a 95% confidence interval.
 
 
-## Example 6: Non-convex optimization
+## Example 6: Non-convex optimization 2D examples
 
 In this example we apply single-agent optimization on multiple non-convex benchmark functions.
 All functions are contained in **benchmark_functions_2D.py**. We use **n_iters** = 100 and **n_runs** = 10
