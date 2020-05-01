@@ -5,7 +5,7 @@ author: filipkl@kth.se
 ---
 
 # Table of Contents
-1. [Installation](#installation)
+1. [Installation](#header--1)
 2. [Docs](#docs)
     1. [Parameters](#parameters)
     2. [Attributes](#attributes)
