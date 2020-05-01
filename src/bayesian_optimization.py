@@ -63,7 +63,7 @@ class bayesian_optimization:
         self.arg_max = arg_max
         if self.arg_max is None:
             obj_grid = [self.objective(i) for i in self._grid]
-            self.arg_max = self._grid[np.array(obj_grid).argmax(), :]
+            self.arg_max = np.array(self._grid[np.array(obj_grid).argmax(), :])
 
         # Model Setup
         self.alpha = alpha
@@ -99,7 +99,7 @@ class bayesian_optimization:
                 pass
 
     def regret(self, y):
-        return self.objective(self.arg_max) - y
+        return self.objective(self.arg_max[0]) - y
 
     def mean_regret(self):
         r_mean = [np.mean(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
@@ -476,7 +476,7 @@ class bayesian_optimization:
             ax1.set_yticks(np.linspace(second_param_grid[0],second_param_grid[-1], 5))
             plt.setp(ax1.get_yticklabels()[0], visible=False)
             ax1.tick_params(axis='both', which='both', labelsize=7)
-            ax1.scatter(self.arg_max[0], self.arg_max[1], marker='x', c='gold', s=50)
+            ax1.scatter(self.arg_max[:,0], self.arg_max[:,1], marker='x', c='gold', s=50)
             ax1.legend(["Iteration %d" % (iter)], fontsize = 8, loc='upper left', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
 
             # Surrogate plot

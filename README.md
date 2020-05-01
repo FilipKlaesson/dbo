@@ -77,9 +77,10 @@ lower and upper bound of the domain along the corresponding dimension.
 
 <pre>
 <b>arg_max</b>: numpy.ndarray, optional (default: None)
-The point that maximizes the objective function. A numpy.ndarray of shape (dim,)
-where dim is the dimension of the function space. If None, arg_max will be
-approximated by arg_max on the grid defined by the domain and grid_density.
+The point(s) that maximizes the objective function. A numpy.ndarray of shape
+(number of global maximum, dim) where dim is the dimension of the function space.
+If None, arg_max will be approximated by arg_max on the grid defined by the domain
+and grid_density.
 </pre>
 
 <pre>
@@ -496,3 +497,52 @@ Output:
 </p>
 
 The plot display the mean regret over the **n_runs** with a 95% confidence interval.
+
+
+## Example 6: Non-convex optimization
+
+In this example we apply single-agent optimization on multiple non-convex benchmark functions.
+All functions are contained in **benchmark_functions_2D.py**. We use **n_iters** = 100 and **n_runs** = 10
+for the regret analysis.
+
+### Ackley
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/ackley.gif" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/ackley_regret.png" height="500" />
+</p>
+
+### Eggholder
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/eggholder.gif" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/eggholder_regret.png" height="500" />
+</p>
+
+### Goldstein_Price
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/goldstein_price.gif" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/goldstein_price_regret.png" height="500" />
+</p>
+
+### Himmelblau
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/himmelblau.gif" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/himmelblau_regret.png" height="500" />
+</p>
+
+### Rastrigin
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/rastrigin.gif" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/rastrigin_regret.png" height="500" />
+</p>
+
+### Rosenbrock
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/rosenbrock.gif" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/rosenbrock_regret.png" height="500" />
+</p>
