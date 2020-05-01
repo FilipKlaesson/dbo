@@ -12,8 +12,8 @@ author: filipkl@kth.se
     3. [Methods](#methods)
     4. [Output](#output)
 3. [Examples](#examples)
-    1. [Example 1: Single-Agent 1D](#example-1)
-    2. [Example 2: Multi-Agent 1D](#example-2)
+    1. [Example 1: Single-Agent 1D](#example-1-single-agent-1D)
+    2. [Example 2: Multi-Agent 1D](#example-2-multi-agent-1D)
 
 ---
 # Installation
