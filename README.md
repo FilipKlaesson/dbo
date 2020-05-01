@@ -16,6 +16,7 @@ author: filipkl@kth.se
     2. [Example 2: Multi-Agent 1D](#example-2-multi-agent-1D)
     3. [Example 3: Single-Agent 2D](#example-3-single-agent-2D)
     4. [Example 4: Multi-Agent 2D](#example-4-multi-agent-2D)
+    5. [Example 5: Regret Analysis](#example-5-regret-analysis)
 
 ---
 # Installation
