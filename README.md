@@ -303,12 +303,13 @@ In addition to setting the parameters as in example, **n_workers** and
 communication **network** needs to be specified. We will use **n_workers** = 3
 agents, and the following **network** numpy.ndarray:
 
+```
 ┌         ┐
 │1   1   0│
 │1   0   1│
 │0   1   1│
 └         ┘
-
+```
 
 ```python
 import numpy as np
