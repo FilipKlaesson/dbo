@@ -5,12 +5,12 @@ author: filipkl@kth.se
 ---
 
 # Table of Contents
-1. [Installation](#Installation-(Debian-like-environments))
+1. [Installation](#installation-(debian-like-environments))
 2. [Docs](#docs)
     1. [Parameters](#parameters)
     2. [Attributes](#attributes)
     3. [Methods](#methods)
-    4. [Output](#Output)
+    4. [Output](#output)
 3. [Examples](#examples)
 
 ---
