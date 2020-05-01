@@ -5,7 +5,7 @@ author: filipkl@kth.se
 ---
 
 # Table of Contents
-1. [Installation](#setup-instructions-for-debian-like-environments)
+1. [Installation](#Installation-(Debian-like-environments))
 2. [Docs](#docs)
     1. [Parameters](#parameters)
     2. [Attributes](#attributes)
