@@ -16,7 +16,8 @@ author: filipkl@kth.se
 ---
 # Installation
 
-This setup guid is for **Debian**-like environments.
+This setup guide is for **Debian**-like environments.
+
 This package is developed for Python 3.7.
 
 1. (Optional) Set up and activate a virtual environment
