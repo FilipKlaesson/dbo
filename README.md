@@ -271,6 +271,8 @@ for the GaussianProcessRegressor model and default **acquisition_function** (Exp
 to select queries. Set **n_iters** = 10 to run 10 iterations of the optimization algorithm, and
 select **n_pre_samples** = 3 initial data points at uniformly random.
 
+Example code:
+
 ```python
 import numpy as np
 import sklearn.gaussian_process.kernels as kernels
@@ -291,6 +293,8 @@ BO = bayesian_optimization( objective = obj_fun,
 BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 ```
 
+Output:
+
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif" height="500" />
 </p>
@@ -299,7 +303,7 @@ BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 ## Example 2: Multi-Agent 1D
 
 Contrary to example 1, this example uses multiple agents to optimize the objective.
-In addition to setting the parameters as in example, **n_workers** and
+In addition to setting the parameters as in example 1, **n_workers** and
 communication **network** needs to be specified. We will use **n_workers** = 3
 agents, and the following **network** numpy.ndarray:
 
@@ -310,6 +314,8 @@ agents, and the following **network** numpy.ndarray:
 │0   1   1│
 └         ┘
 ```
+
+Example code:
 
 ```python
 import numpy as np
@@ -337,14 +343,23 @@ BO = bayesian_optimization( objective = obj_fun,
 BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 ```
 
+Output:
+
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo.gif" height="500" />
 </p>
 
 
-## Example 2
+## Example 3: Single-Agent 2D
 
-Single-agent 2D example
+In this example we utilize the **benchmark_functions_2D.py** script to find the
+maximum of the fun = Bohachevsky_1() function. Note that the functions in  **benchmark_functions_2D.py**
+are designed to minimize, we therefore flip the sign using a lambda function and specify the
+objective as **objective** = lambda x: -1*fun.function(x). Each benchmark function in
+**benchmark_functions_2D.py** also contains a domain at fun.domain, and some functions
+has argmin specified at fun.arg_min.
+
+Example code:
 
 ```python
 import numpy as np
@@ -362,15 +377,69 @@ arg_max = fun.arg_min
 BO = bayesian_optimization( objective = obj_fun,
                             domain = domain,
                             arg_max = arg_max,
-                            kernel = kernels.RBF(),
-                            acquisition_function = 'ei',
-                            grid_density = 30)
+                            grid_density = 30 )
 
 # Optimize
-BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 3, plot = True)
+BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
 
 ```
 
+Output:
+
 <p align="center">
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example3/bo_agent_0.gif" height="800" />
+</p>
+
+
+## Example 4: Multi-Agent 2D
+
+In this example we use the same setting as in exmaple 3, but we use multiple agents
+to optimize the objective. We set **n_workers** = 3 agents, and the following
+**network** numpy.ndarray:
+
+```
+┌         ┐
+│1   1   0│
+│1   0   1│
+│0   1   1│
+└         ┘
+```
+
+Example code:
+
+```python
+import numpy as np
+import sklearn.gaussian_process.kernels as kernels
+from src.bayesian_optimization import bayesian_optimization
+from src.benchmark_functions_2D import *
+
+# Benchmark Function
+fun = Bohachevsky_1()
+domain = fun.domain
+obj_fun = lambda x: -1*fun.function(x)
+arg_max = fun.arg_min
+
+# Communication network
+N = np.eye(3)
+N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
+
+# Bayesian optimization object
+BO = bayesian_optimization( objective = obj_fun,
+                            domain = domain,
+                            arg_max = arg_max,
+                            n_workers = 3,
+                            network = N,
+                            grid_density = 30 )
+
+# Optimize
+BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
+
+```
+
+Output:
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_0.gif" height="800" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_1.gif" height="800" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example4/bo_agent_2.gif" height="800" />
 </p>
