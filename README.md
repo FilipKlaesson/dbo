@@ -17,6 +17,7 @@ author: filipkl@kth.se
     3. [Example 3: Single-Agent 2D](#example-3-single-agent-2D)
     4. [Example 4: Multi-Agent 2D](#example-4-multi-agent-2D)
     5. [Example 5: Regret Analysis](#example-5-regret-analysis)
+    6. [Example 6: Non-convex optimization](#example-6-non-convex-optimization)
 
 ---
 # Installation
