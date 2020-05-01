@@ -7,7 +7,7 @@ from src.benchmark_functions_2D import *
 np.random.seed(2)
 
 # Benchmark Function
-fun = Bohachevsky_1()
+fun = Ackley_3()
 domain = fun.domain
 obj_fun = lambda x: -1*fun.function(x)
 arg_max = fun.arg_min
