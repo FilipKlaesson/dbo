@@ -34,6 +34,7 @@ The animation below demonstrate the optimization process on Himmelblau's functio
     6. [Example 6: Non-convex optimization](#example-6-non-convex-optimization-2D-examples)
 4. [Contributing](#contributing)
 5. [Updates](#updates)
+6. [Credits](#credits)
 
 ---
 # Installation
@@ -566,8 +567,17 @@ for the regret analysis.
 
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via issue or email with the owners of this repository. If you decide to fix an issue, it's advisable to check the comment thread to see if there's somebody already working on a fix. If no one is working on it, kindly leave a comment stating that you intend to work on it. That way other people don't accidentally duplicate your effort. Before sending a merge request, make sure to update the README.md with details of changes to the interface under **Updates**.
+When contributing to this repository, please first discuss the change you wish to make via issue or email with the owners of this repository. If you decide to fix an issue, it's advisable to check the comment thread to see if there's somebody already working on a fix. If no one is working on it, kindly leave a comment stating that you intend to work on it. That way other people don't accidentally duplicate your effort. Before sending a merge request, make sure to update the README.md with details of changes to the interface under **Updates**. If you're a first time contributor to **dbo**, add yourself to the Credits list.
 
 # Updates
 
 * v.1.0: initial launch: **dbo** offers distributed and paralell bayesian optimization, stochastic policy evaluations, internal acquisition function regularization, regret analysis outputs etc.
+
+# Credits
+
+The following people have contributed to **dbo**:
+
+* [Filip Klaesson](https://github.com/FilipKlaesson)
+* Na Li
+* Runyu Zhang
+* [Petter Nilsson](https://github.com/pettni)
