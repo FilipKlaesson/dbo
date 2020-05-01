@@ -34,10 +34,3 @@ BO = bayesian_optimization( objective = obj_fun,
 BO.optimize(n_iters = 50, n_runs = 10, n_pre_samples = 3, random_search = 1000, plot = True)
 for a in range(BO.n_workers):
     print("Predicted max {}: {}".format(a, BO.pre_max[a]))
-
-
-<object data="http://yoursite.com/the.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="http://yoursite.com/the.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
