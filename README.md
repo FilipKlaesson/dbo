@@ -5,6 +5,7 @@ sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/gener
 In addition to the vanilla bayesian optimization, **dbo** offers:
 
 * Distributed and parallel optimization
+* Stochastic policy evaluations
 * Internal acquisition function regularization
 * Regret analysis outputs
 
