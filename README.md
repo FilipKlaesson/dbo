@@ -5,7 +5,7 @@ author: filipkl@kth.se
 ---
 
 # Table of Contents
-1. [Installation](#header--1)
+1. [Installation](#installation)
 2. [Docs](#docs)
     1. [Parameters](#parameters)
     2. [Attributes](#attributes)
@@ -14,8 +14,9 @@ author: filipkl@kth.se
 3. [Examples](#examples)
 
 ---
-# Installation (Debian-like environments)
+# Installation
 
+This setup guid is for **Debian**-like environments.
 This package is developed for Python 3.7.
 
 1. (Optional) Set up and activate a virtual environment
