@@ -491,5 +491,7 @@ BO.optimize(n_iters = 50, n_runs = 10, n_pre_samples = 3)
 Output:
 
 <object data="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf" type="application/pdf" height="500px">
-    <embed src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf"></embed>
+    <embed src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
+    </embed>
 </object>
