@@ -1,6 +1,18 @@
 # Distributed Bayesian Optimization for Multi-Agent Systems
 
-author: filipkl@kth.se
+*dbo* is compact python package for bayesian optimization. It is build on top of
+sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor).
+In addition to the vanilla bayesian optimization, **dbo** offers:
+
+* Distributed and parallel optimization
+* Internal acquisition function regularization
+* Regret analysis outputs
+
+The animation below demonstrate the optimization process on Himmelblau's function:
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example6/himmelblau.gif" height="500" />
+</p>
 
 ---
 
