@@ -262,7 +262,14 @@ Plots and gifs (except regret plot) are disabled when n_runs > 1.
 
 # Examples
 
-Single-agent 1D example
+## Example 1: Single-Agent 1D
+
+In this example, a single agent is to optimize a user defined function and domain.
+A lambda function is used as **objective** function, and a numpy.ndarray to specify
+the search **domain**. We will use the default **n_workers** (1), default **kernel** (RBF)
+for the GaussianProcessRegressor model and default **acquisition_function** (Expected Improvement)
+to select queries. Set **n_iters** = 10 to run 10 iterations of the optimization algorithm, and
+select **n_pre_samples** = 3 initial data points at uniformly random.
 
 ```python
 import numpy as np
@@ -278,8 +285,6 @@ obj_fun = lambda x: (x[0]-0.5)*np.sin(x[0])
 # Bayesian optimization object
 BO = bayesian_optimization( objective = obj_fun,
                             domain = domain,
-                            kernel = kernels.RBF(),
-                            acquisition_function = 'ei',
                             grid_density = 100)
 
 # Optimize
@@ -290,7 +295,53 @@ BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
   <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example1/bo.gif" height="500" />
 </p>
 
----
+
+## Example 2: Multi-Agent 1D
+
+Contrary to example 1, this example uses multiple agents to optimize the objective.
+In addition to setting the parameters as in example, **n_workers** and
+communication **network** needs to be specified. We will use **n_workers** = 3
+agents, and the following **network** numpy.ndarray:
+
+┌         ┐
+│1   1   0│
+│1   0   1│
+│0   1   1│
+└         ┘
+
+
+```python
+import numpy as np
+import sklearn.gaussian_process.kernels as kernels
+from src.bayesian_optimization import bayesian_optimization
+
+# Domain
+domain = np.array([[-10, 10]])
+
+# Objective function
+obj_fun = lambda x: (x[0]-0.5)*np.sin(x[0])
+
+# Communication network
+N = np.eye(3)
+N[0,1] = N[1,0] = N[1,2] = N[2,1] = 1
+
+# Bayesian optimization object
+BO = bayesian_optimization( objective = obj_fun,
+                            domain = domain,
+                            n_workers = 3,
+                            network = N,
+                            grid_density = 100)
+
+# Optimize
+BO.optimize(n_iters = 10, n_pre_samples = 3, plot = True)
+```
+
+<p align="center">
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo.gif" height="500" />
+</p>
+
+
+## Example 2
 
 Single-agent 2D example
 
@@ -320,5 +371,5 @@ BO.optimize(n_iters = 10, n_runs = 1, n_pre_samples = 3, plot = True)
 ```
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example2/bo_agent_0.gif" height="800" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example3/bo_agent_0.gif" height="800" />
 </p>

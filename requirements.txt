@@ -3,3 +3,4 @@ matplotlib
 scipy
 nose
 sklearn
+tqdm

@@ -118,7 +118,7 @@ class bayesian_optimization:
     def ridge(self, x, center = 0):
         return self._regularization_strength * np.linalg.norm(x - center)
 
-    def expected_improvement(self, model, x, a, epsilon = 0.01):
+    def expected_improvement(self, model, x, a, epsilon = 0.00000001):
         """
         Expected improvement acquisition function.
         Arguments:
@@ -128,7 +128,7 @@ class bayesian_optimization:
             x: array-like, shape = [n_samples, n_hyperparams]
                 The point for which the expected improvement needs to be computed.
             epsilon: float
-                Expected improvment margin, increases exploration
+                Expected improvement margin, increases exploration
         """
 
         x = x.reshape(-1, self._dim)
