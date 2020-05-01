@@ -456,12 +456,12 @@ their neighbours for faster convergence. For example, agent 0 (left figure, blue
 utilize the queries broadcasted from neighbour agent 1 (middle figure, green queries).
 
 
-## Example 5: Single-Agent 2D Regret Analysis
+## Example 5: Regret Analysis
 
 Utilizing the **n_runs** parameter, it is straight-forward to perform regret analysis
 over multiple runs. We demonstrate this by setting **n_iters** = 50 and **n_runs** = 10
 on the single-agent setting described in example 3. Note that plots (except regret plot)
-are automatically disabled when running multiple times.
+are automatically disabled when running multiple runs.
 
 Example code:
 
@@ -491,5 +491,7 @@ BO.optimize(n_iters = 50, n_runs = 10, n_pre_samples = 3)
 Output:
 
 <p align="center">
-  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.png" height="500" />
+  <img src="https://github.com/FilipKlaesson/dbo/blob/master/examples/fig/example5/regret.png" height="400" />
 </p>
+
+The plot display the mean regret over the **n_runs** with a 95% confidence interval.
