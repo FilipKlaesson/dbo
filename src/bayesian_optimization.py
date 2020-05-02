@@ -98,17 +98,17 @@ class bayesian_optimization:
             except FileExistsError:
                 pass
 
-    def regret(self, y):
+    def _regret(self, y):
         return self.objective(self.arg_max[0]) - y
 
-    def mean_regret(self):
+    def _mean_regret(self):
         r_mean = [np.mean(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
         r_std = [np.std(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
         # 95% confidence interval
         conf95 = [1.96*rst/self._simple_regret.shape[0] for rst in r_std]
         return r_mean, conf95
 
-    def save_data(self, data, name):
+    def _save_data(self, data, name):
         with open(self._DATA_DIR_ + '/' + name + '.csv', 'w', newline='') as file:
             writer = csv.writer(file, delimiter=',')
             for i in zip(*data):
@@ -118,7 +118,7 @@ class bayesian_optimization:
     def ridge(self, x, center = 0):
         return self._regularization_strength * np.linalg.norm(x - center)
 
-    def expected_improvement(self, model, x, a, epsilon = 0.001):
+    def expected_improvement(self, model, x, a, epsilon = 0.01):
         """
         Expected improvement acquisition function.
         Arguments:
@@ -181,7 +181,7 @@ class bayesian_optimization:
 
         return -1 * ts_x
 
-    def softmax(self, n, x, acq):
+    def _softmax(self, n, x, acq):
         """
         Softmax distribution on acqusition function points for stochastic query selection
         Arguments:
@@ -189,22 +189,22 @@ class bayesian_optimization:
             n: integer
                 Iteration number.
             x: array-like, shape = [n_samples, n_hyperparams]
-                The point for which the softmax needs to be computed and selected from.
+                The point for which the _softmax needs to be computed and selected from.
             acq: array-like, shape = [n_samples, 1]
                 The acqusition function value for x.
         """
         C = max(abs(max(acq)-acq))
         if C > 0:
             beta = 2*np.log(n+self._initial_data_size+1)/C
-            softmax_prob = lambda e: np.exp(beta*e)
-            sm = [softmax_prob(e) for e in acq]
+            _softmax_prob = lambda e: np.exp(beta*e)
+            sm = [_softmax_prob(e) for e in acq]
             norm_sm = [float(i)/sum(sm) for i in sm]
             idx = np.random.choice(range(x.shape[0]), p=np.squeeze(norm_sm))
         else:
             idx = np.random.choice(range(x.shape[0]))
         return x[idx]
 
-    def find_next_query(self, n, a, model, random_search):
+    def _next_query(self, n, a, model, random_search):
         """
         Proposes the next query.
         Arguments:
@@ -223,7 +223,7 @@ class bayesian_optimization:
             ei = - self.expected_improvement(model, x, a)
             #Stochastic Boltzmann Policy
             if self._stochastic_policy:
-                x = self.softmax(n, x, ei)
+                x = self._softmax(n, x, ei)
             #Greedy Policy
             else:
                 x = x[np.argmax(ei), :]
@@ -256,7 +256,7 @@ class bayesian_optimization:
         for run in tqdm(range(n_runs), position=0, leave = None, disable = not n_runs > 1):
 
             # Reset model and data before each run
-            self._next_query = [[] for i in range(self.n_workers)]
+            self.__next_query = [[] for i in range(self.n_workers)]
             self.bc_data = [[[] for j in range(self.n_workers)] for i in range(self.n_workers)]
             self.X_train = [[] for i in range(self.n_workers)]
             self.Y_train =[[] for i in range(self.n_workers)]
@@ -294,10 +294,10 @@ class bayesian_optimization:
                         self.X_train[a] = self.X[a][:]
                         self.Y_train[a] = self.Y[a][:]
                     else:
-                        self.X[a].append(self._next_query[a])
-                        self.Y[a].append(self.objective(self._next_query[a]))
-                        self.X_train[a].append(self._next_query[a])
-                        self.Y_train[a].append(self.objective(self._next_query[a]))
+                        self.X[a].append(self.__next_query[a])
+                        self.Y[a].append(self.objective(self.__next_query[a]))
+                        self.X_train[a].append(self.__next_query[a])
+                        self.Y_train[a].append(self.objective(self.__next_query[a]))
 
                         X = self.X[a]
                         Y = self.Y[a]
@@ -314,25 +314,25 @@ class bayesian_optimization:
                     self.model[a].fit(X, Y)
 
                     # Find next query
-                    x = self.find_next_query(n, a, self.model[a], random_search)
-                    self._next_query[a] = x
+                    x = self._next_query(n, a, self.model[a], random_search)
+                    self.__next_query[a] = x
 
                     # In case of a "duplicate", randomly sample a next query point.
                     if np.any(np.abs(x - self.model[a].X_train_) <= epsilon):
                         x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], self.domain.shape[0])
 
                     # Broadcast data to neighbours
-                    self.broadcast(a,x,self.objective(x))
+                    self._broadcast(a,x,self.objective(x))
 
                 # Calculate regret
-                self._simple_regret[run,n] = self.regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
+                self._simple_regret[run,n] = self._regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
 
                 # Plot optimization step
                 if n_runs == 1 and plot is not False:
                     if plot is True or n == n_iters:
-                        self.plot_iteration(n)
+                        self._plot_iteration(n)
                     elif not n % plot:
-                        self.plot_iteration(n)
+                        self._plot_iteration(n)
 
         self.pre_arg_max = []
         self.pre_max = []
@@ -341,24 +341,24 @@ class bayesian_optimization:
             self.pre_max.append(self.model[a].X_train_[np.array(self.model[a].y_train_).argmax()])
 
         # Compute and plot regret
-        r_mean, conf95 = self.mean_regret()
-        self.plot_regret(r_mean, conf95)
+        r_mean, conf95 = self._mean_regret()
+        self._plot_regret(r_mean, conf95)
 
         # Save data
-        self.save_data(data = [r_mean, conf95], name = 'regret')
+        self._save_data(data = [r_mean, conf95], name = 'regret')
 
         # Generate gif
         if n_runs == 1:
             if plot is not False:
-                self.generate_gif(n_iters, plot)
+                self._generate_gif(n_iters, plot)
 
-    def broadcast(self, agent, x, y):
+    def _broadcast(self, agent, x, y):
         for neighbour_agent, neighbour in enumerate(self.network[agent]):
             if neighbour and neighbour_agent != agent:
                 self.bc_data[agent][neighbour_agent].append((x,y))
         return
 
-    def plot_iteration(self, iter):
+    def _plot_iteration(self, iter):
         """
         Plots the surrogate and acquisition function.
         """
@@ -408,7 +408,7 @@ class bayesian_optimization:
             ax1.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
             # Acquisition function plot
             ax2.plot(self._grid, acq[a], color = rgba[a])
-            ax2.axvline(self._next_query[a], color = rgba[a])
+            ax2.axvline(self.__next_query[a], color = rgba[a])
             ax2.set_xlabel("x")
             ax2.yaxis.set_major_formatter(fmt)
             ax2.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
@@ -465,8 +465,8 @@ class bayesian_optimization:
             cbar1.ax.tick_params(labelsize=7)
             ax1.autoscale(False)
             ax1.scatter(x[a][:, 0], x[a][:, 1], zorder=1, color = rgba[a], s = 10)
-            ax1.axvline(self._next_query[a][0], color='k', linewidth=1)
-            ax1.axhline(self._next_query[a][1], color='k', linewidth=1)
+            ax1.axvline(self.__next_query[a][0], color='k', linewidth=1)
+            ax1.axhline(self.__next_query[a][1], color='k', linewidth=1)
             ax1.set_ylabel("y")
             leg1 = ax1.legend(['Objective'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax1.add_artist(leg1)
@@ -489,8 +489,8 @@ class bayesian_optimization:
             cbar2.ax.tick_params(labelsize=7)
             ax2.autoscale(False)
             ax2.scatter(x[a][:, 0], x[a][:, 1], zorder=1, color = rgba[a], s = 10)
-            ax2.axvline(self._next_query[a][0], color='k', linewidth=1)
-            ax2.axhline(self._next_query[a][1], color='k', linewidth=1)
+            ax2.axvline(self.__next_query[a][0], color='k', linewidth=1)
+            ax2.axhline(self.__next_query[a][1], color='k', linewidth=1)
             ax2.set_ylabel("y")
             ax2.legend(['Surrogate'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax2.set_xlim([first_param_grid[0], first_param_grid[-1]])
@@ -520,8 +520,8 @@ class bayesian_optimization:
             cbar3 = plt.colorbar(cp3, ax=ax3, shrink = 0.9, format=fmt, pad = 0.05)
             cbar3.ax.tick_params(labelsize=7)
             ax3.autoscale(False)
-            ax3.axvline(self._next_query[a][0], color='k', linewidth=1)
-            ax3.axhline(self._next_query[a][1], color='k', linewidth=1)
+            ax3.axvline(self.__next_query[a][0], color='k', linewidth=1)
+            ax3.axhline(self.__next_query[a][1], color='k', linewidth=1)
             ax3.set_xlabel("x")
             ax3.set_ylabel("y")
             ax3.legend(['Acquisition'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
@@ -536,7 +536,7 @@ class bayesian_optimization:
             plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d_agent_%d.pdf' % (iter, a), bbox_inches='tight')
             plt.savefig(self._PNG_DIR_ + '/bo_iteration_%d_agent_%d.png' % (iter, a), bbox_inches='tight')
 
-    def plot_regret(self, r_mean, conf95, log = False):
+    def _plot_regret(self, r_mean, conf95, log = False):
 
         use_log_scale = max(r_mean)/min(r_mean) > 10
 
@@ -568,7 +568,8 @@ class bayesian_optimization:
         else:
             plt.savefig(self._PDF_DIR_ + '/regret.pdf', bbox_inches='tight')
             plt.savefig(self._PNG_DIR_ + '/regret.png', bbox_inches='tight')
-    def generate_gif(self, n_iters, plot):
+
+    def _generate_gif(self, n_iters, plot):
         if self._dim == 1:
             plots = []
             for i in range(n_iters+1):
