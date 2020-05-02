@@ -63,7 +63,7 @@ class bayesian_optimization:
         self.arg_max = arg_max
         if self.arg_max is None:
             obj_grid = [self.objective(i) for i in self._grid]
-            self.arg_max = np.array(self._grid[np.array(obj_grid).argmax(), :])
+            self.arg_max = np.array(self._grid[np.array(obj_grid).argmax(), :]).reshape(-1, self._dim)
 
         # Model Setup
         self.alpha = alpha
@@ -371,7 +371,7 @@ class bayesian_optimization:
         if self._acquisition_function == self.expected_improvement:
             acq = [-1 * self.expected_improvement(self.model[a], self._grid, a) for a in range(self.n_workers)]
         else:
-            acq = [-1 * self._thompson_samples[a][n] for a in range(self.n_workers)]
+            acq = [-1 * self._thompson_samples[a][iter] for a in range(self.n_workers)]
 
         for a in range(self.n_workers):
             mu[a] = self.scaler[a].inverse_transform(mu[a])
