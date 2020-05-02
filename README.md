@@ -273,6 +273,7 @@ Running <b>optimize()</b> will generate the following output:
 * regret
 
     * File with mean regret over the n_runs together with the 95% confidence bound error (.csv)
+      * Note: The 95% confidence bound is the symmetric bound on the **linear** scale.
 
     * Plots of mean regret together with 95% confidence bounds (.png/.pdf)
 

@@ -562,9 +562,12 @@ class bayesian_optimization:
         plt.grid(b=True, which='minor', color='grey', linestyle='--', alpha=0.3)
         plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
         plt.tight_layout()
-        plt.savefig(self._PDF_DIR_ + '/regret.pdf', bbox_inches='tight')
-        plt.savefig(self._PNG_DIR_ + '/regret.png', bbox_inches='tight')
-
+        if use_log_scale:
+            plt.savefig(self._PDF_DIR_ + '/regret_log.pdf', bbox_inches='tight')
+            plt.savefig(self._PNG_DIR_ + '/regret_log.png', bbox_inches='tight')
+        else:
+            plt.savefig(self._PDF_DIR_ + '/regret.pdf', bbox_inches='tight')
+            plt.savefig(self._PNG_DIR_ + '/regret.png', bbox_inches='tight')
     def generate_gif(self, n_iters, plot):
         if self._dim == 1:
             plots = []
