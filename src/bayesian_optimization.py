@@ -5,6 +5,7 @@ import imageio
 import datetime
 import warnings
 import itertools
+import __main__
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -84,7 +85,7 @@ class bayesian_optimization:
 
         # Directory setup
         self._DT_ = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-        self._ROOT_DIR_ = os.path.dirname(os.path.dirname( __file__ ))
+        self._ROOT_DIR_ = os.path.dirname(os.path.dirname( __main__.__file__ ))
         self._TEMP_DIR_ = os.path.join(self._ROOT_DIR_, "temp")
         self._ID_DIR_ = os.path.join(self._TEMP_DIR_, self._DT_)
         self._DATA_DIR_ = os.path.join(self._ID_DIR_, "data")
