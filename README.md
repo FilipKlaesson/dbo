@@ -253,9 +253,9 @@ Parameter n_runs allow multiple runs of the same optimization setting to simplif
 
 ### Output
 
-**dbo** will create a **temp** folder in the same directory as **__main__**. The output
+**dbo** will create a **temp** folder in the same directory as **\_\_main\_\_**. The output
 (generated data/plots/gifs) will be stored in the **temp** folder keyed with date and time.
-For example, by running **dbo** in a main script in the **examples** folder, the
+For example, by running **dbo** with **\_\_main\_\_** in the **examples** folder, the
 directory will look like this:
 
 ```
