@@ -55,11 +55,11 @@ echo 'alias dboenv="source ~/.venvs/dboenv/bin/activate"' >> ~/.zshrc
 source ~/.zshrc  
 ```
 
-2. Install python dependencies and dbo
+3. Install python dependencies and dbo
 ```bash
 git clone git@github.com:FilipKlaesson/dbo.git && cd dbo
 pip install -r requirements.txt
-python setup.py install
+python setup.py install     # use 'python setup.py develop' for development
 ```
 
 ---
@@ -253,19 +253,22 @@ Parameter n_runs allow multiple runs of the same optimization setting to simplif
 
 ### Output
 
-The output (generated data/plots/gifs) will be stored in the **temp** folder keyed with date and time:
+**dbo** will create a **temp** folder in the same directory as **__main__**. The output
+(generated data/plots/gifs) will be stored in the **temp** folder keyed with date and time.
+For example, by running **dbo** in a main script in the **examples** folder, the
+directory will look like this:
 
 ```
 dbo
-└───examples
 └───src  
-└───temp
-    └───YYYY-MM-DD_HH:MM:SS
-        └───data
-        └───fig
-            └───png
-            └───pdf
-            └───gif
+└───examples
+    └───temp
+        └───YYYY-MM-DD_HH:MM:SS
+            └───data
+            └───fig
+                └───png
+                └───pdf
+                └───gif
 ```
 
 Running <b>optimize()</b> will generate the following output:
