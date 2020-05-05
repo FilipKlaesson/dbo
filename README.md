@@ -142,7 +142,7 @@ Policy to apply on acquisition function to selecting next query.
 If 'greedy', the next query is argmax of the acquisition function.
 If 'boltzmann', draw the next query from a Boltzmann distribution where the
 acquisition function acts as energy measure. If 'expected_acquisition', next
-query is argmax of acquisition function trained on fantasies of the neighbours
+query is argmax of acquisition function trained including fantasies of the neighbours
 pending queries. Supported policies: 'greedy', 'boltzmann', 'expected_acquisition'.
 </pre>
 
