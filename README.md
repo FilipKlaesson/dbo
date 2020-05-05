@@ -579,8 +579,8 @@ When contributing to this repository, please first discuss the change you wish t
 
 # Updates
 
-* v.1.0: initial launch: **dbo** offers distributed and paralell bayesian optimization, stochastic policy evaluations, internal acquisition function regularization, regret analysis outputs etc.
-* v.1.1: added expected acquisition function under pending queries.
+* v.0.1: initial launch: **dbo** offers distributed and paralell bayesian optimization, stochastic policy evaluations, internal acquisition function regularization, regret analysis outputs etc.
+* v.0.2: added expected acquisition function under pending queries.
 
 # Credits
 
