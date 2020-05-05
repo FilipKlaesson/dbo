@@ -16,13 +16,14 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from sklearn.utils import check_random_state
 from sklearn.preprocessing import StandardScaler
 from sklearn.gaussian_process import kernels, GaussianProcessRegressor
 
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', stochastic_policy = False, regularization = None, regularization_strength = 0.01, grid_density = 100):
+    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', regularization = None, regularization_strength = 0.01, grid_density = 100):
 
         # Optimization setup
         self.objective = objective
@@ -31,12 +32,13 @@ class bayesian_optimization:
             self.network = np.eye(n_workers)
         else:
             self.network = network
+        self._policy = policy
 
         # Acquisition function
         if acquisition_function == 'ei':
-            self._acquisition_function = self.expected_improvement
+            self._acquisition_function = self._expected_improvement
         elif acquisition_function == 'ts':
-            self._acquisition_function = self.thompson_sampling
+            self._acquisition_function = self._thompson_sampling
         else:
             print('Supported acquisition functions: ei, ts')
             return
@@ -45,11 +47,10 @@ class bayesian_optimization:
         self._regularization = None
         if regularization is not None:
             if regularization == 'ridge':
-                self._regularization = self.ridge
+                self._regularization = self._ridge
             else:
                 print('Supported regularization functions: ridge')
                 return
-
 
         # Domain
         self.domain = domain    #shape = [n_params, 2]
@@ -70,7 +71,6 @@ class bayesian_optimization:
         self.alpha = alpha
         self.kernel = kernel
         self._regularization_strength = regularization_strength
-        self._stochastic_policy = stochastic_policy
         self.model = [GaussianProcessRegressor(  kernel=self.kernel,
                                                     alpha=self.alpha,
                                                     n_restarts_optimizer=10)
@@ -81,7 +81,7 @@ class bayesian_optimization:
         self.bc_data = None
         self.X_train = self.Y_train = None
         self.X = self.Y = None
-        self._thompson_samples = [[] for i in range(n_workers)]
+        self._acquisition_evaluations = [[] for i in range(n_workers)]
 
         # Directory setup
         self._DT_ = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
@@ -116,16 +116,14 @@ class bayesian_optimization:
                 writer.writerow(i)
         return
 
-    def ridge(self, x, center = 0):
+    def _ridge(self, x, center = 0):
         return self._regularization_strength * np.linalg.norm(x - center)
 
-    def expected_improvement(self, model, x, a, epsilon = 0.01):
+    def _expected_improvement(self, a, x, model = None, epsilon = 0.01):
         """
         Expected improvement acquisition function.
         Arguments:
         ----------
-            model: sklearn model
-                Surrogate model used for acquisition function
             x: array-like, shape = [n_samples, n_hyperparams]
                 The point for which the expected improvement needs to be computed.
             epsilon: float
@@ -134,7 +132,10 @@ class bayesian_optimization:
 
         x = x.reshape(-1, self._dim)
 
-        Y_max = np.max(self.model[a].y_train_)
+        if model is None:
+            model = self.model[a]
+
+        Y_max = np.max(model.y_train_)
 
         mu, sigma = model.predict(x, return_std=True)
         mu = np.squeeze(mu)
@@ -142,8 +143,8 @@ class bayesian_optimization:
         if self._regularization is None:
             mu = mu - epsilon
         else:
-            if self._regularization == self.ridge:
-                ridge = np.array([self.ridge(i, self.X[a][-1]) for i in x])
+            if self._regularization == self._ridge:
+                ridge = np.array([self._ridge(i, self.X[a][-1]) for i in x])
                 mu = mu - Y_max*ridge
 
         with np.errstate(divide='ignore'):
@@ -154,7 +155,7 @@ class bayesian_optimization:
 
         return -1 * expected_improvement
 
-    def thompson_sampling(self, a, model, x):
+    def _thompson_sampling(self, a, x, num_samples = 1):
         """
         Thompson sampling acquisition function.
         Arguments:
@@ -167,22 +168,76 @@ class bayesian_optimization:
                 The point for which the thompson samples needs to be computed.
         """
         x = x.reshape(-1, self._dim)
-        x_grid = np.append(self._grid, x).reshape(-1, self._dim)
 
-        ns = 1
-        yts = model.sample_y(x_grid, n_samples=ns)
-        if ns > 1:
+        if model is None:
+            model = self.model[a]
+
+        yts = model[a].sample_y(x, n_samples=num_samples)
+        if num_samples > 1:
             yts = np.squeeze(yts)
         ts = np.mean(yts, axis=1)
 
-        ts_grid = ts[0:self._grid.shape[0]]
-        ts_x = ts[self._grid.shape[0]:]
+        return -1 * ts
 
-        self._thompson_samples[a].append(-1*ts_grid)
+    def _expected_acquisition(self, a, x, n_fantasies=5):
 
-        return -1 * ts_x
+        x = x.reshape(-1, self._dim)
 
-    def _softmax(self, n, x, acq):
+        # Pending queries
+        x_p = np.array([self._next_query[i] for i in range(a)]).reshape(-1, self._dim)   # Change this to be only neighbour agents with lower index
+
+        if not x_p.shape[0]:
+            return self._acquisition_function(a, x)
+        else:
+            # Sample fantasies
+            rng = check_random_state(0)
+            mu, cov = self.model[a].predict(x_p, return_cov=True)
+            mu = self.scaler[a].inverse_transform(mu)
+            cov = self.scaler[a].scale_**2 * cov
+            if mu.ndim == 1:
+                y_fantasies = rng.multivariate_normal(mu, cov, n_fantasies).T
+            else:
+                y_fantasies = [rng.multivariate_normal(mu[:, i], cov, n_fantasies).T[:, np.newaxis] for i in range(mu.shape[1])]
+                y_fantasies = np.hstack(y_fantasies)
+
+            # models for fantasies
+            fantasy_models = [GaussianProcessRegressor( kernel=self.kernel,
+                                                        alpha=self.alpha,
+                                                        optimizer=None)
+                                                        for i in range(n_fantasies) ]
+
+            # acquisition over fantasies
+            fantasy_acquisition = np.zeros((x.shape[0], n_fantasies))
+            for i in range(n_fantasies):
+
+                f_X_train = self.X_train[a][:]
+                f_y_train = self.Y_train[a][:]
+
+                fantasy_scaler = StandardScaler()
+                fantasy_scaler.fit(np.array(f_y_train).reshape(-1, 1))
+
+                # add fantasy data
+                for xf,yf in zip(x_p, y_fantasies[:,0,i]):
+                    f_X_train = np.append(f_X_train, xf).reshape(-1, self._dim)
+                    f_y_train = np.append(f_y_train, yf).reshape(-1, 1)
+
+                # fit fantasy surrogate
+                f_y_train = fantasy_scaler.transform(f_y_train)
+                fantasy_models[i].fit(f_X_train, f_y_train)
+
+                # calculate acqusition
+                acquisition = self._acquisition_function(a,x,fantasy_models[i])
+                for j in range(x.shape[0]):
+                    fantasy_acquisition[:,i] = acquisition
+
+            # compute expected acquisition
+            expected_acquisition = np.zeros(x.shape[0])
+            for j in range(x.shape[0]):
+                expected_acquisition[j] = np.mean(fantasy_acquisition[j,:])
+
+        return expected_acquisition
+
+    def _blotzmann(self, n, x, acq):
         """
         Softmax distribution on acqusition function points for stochastic query selection
         Arguments:
@@ -190,22 +245,22 @@ class bayesian_optimization:
             n: integer
                 Iteration number.
             x: array-like, shape = [n_samples, n_hyperparams]
-                The point for which the _softmax needs to be computed and selected from.
+                The point for which the blotzmann needs to be computed and selected from.
             acq: array-like, shape = [n_samples, 1]
                 The acqusition function value for x.
         """
         C = max(abs(max(acq)-acq))
         if C > 0:
             beta = 2*np.log(n+self._initial_data_size+1)/C
-            _softmax_prob = lambda e: np.exp(beta*e)
-            sm = [_softmax_prob(e) for e in acq]
-            norm_sm = [float(i)/sum(sm) for i in sm]
-            idx = np.random.choice(range(x.shape[0]), p=np.squeeze(norm_sm))
+            _blotzmann_prob = lambda e: np.exp(beta*e)
+            bm = [_blotzmann_prob(e) for e in acq]
+            norm_bm = [float(i)/sum(bm) for i in bm]
+            idx = np.random.choice(range(x.shape[0]), p=np.squeeze(norm_bm))
         else:
             idx = np.random.choice(range(x.shape[0]))
         return x[idx]
 
-    def _next_query(self, n, a, model, random_search):
+    def _find_next_query(self, n, a, random_search):
         """
         Proposes the next query.
         Arguments:
@@ -219,18 +274,32 @@ class bayesian_optimization:
             random_search: integer.
                 Number of random samples used to optimize the acquisition function. Default 1000
         """
+        # Candidate set
         x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], size=(random_search, self._dim))
-        if self._acquisition_function == self.expected_improvement:
-            ei = - self.expected_improvement(model, x, a)
-            #Stochastic Boltzmann Policy
-            if self._stochastic_policy:
-                x = self._softmax(n, x, ei)
-            #Greedy Policy
-            else:
-                x = x[np.argmax(ei), :]
+
+        X = x[:]
+        if self._record_step:
+            X = np.append(self._grid, x).reshape(-1, self._dim)
+
+        # Calculate acquisition function
+        if self._policy == 'expected_acquisition':
+            acq = - self._expected_acquisition(a, X)
         else:
-            ts = - self.thompson_sampling(a, model, x)
-            x = x[np.argmax(ts), :]
+            # Vanilla acquisition functions
+            acq = - self._acquisition_function(a, X)
+
+        if self._record_step:
+            self._acquisition_evaluations[a].append(-1*acq[0:self._grid.shape[0]])
+            acq = acq[self._grid.shape[0]:]
+
+        # Apply policy
+        if self._policy == 'boltzmann':
+            # Boltzmann Policy
+            x = self._blotzmann(n, x, acq)
+        else:
+            #Greedy Policy
+            x = x[np.argmax(acq), :]
+
         return x
 
     def optimize(self, n_iters, n_runs = 1, x0=None, n_pre_samples=5, random_search=100, epsilon=1e-7, plot = False):
@@ -257,7 +326,7 @@ class bayesian_optimization:
         for run in tqdm(range(n_runs), position=0, leave = None, disable = not n_runs > 1):
 
             # Reset model and data before each run
-            self.__next_query = [[] for i in range(self.n_workers)]
+            self._next_query = [[] for i in range(self.n_workers)]
             self.bc_data = [[[] for j in range(self.n_workers)] for i in range(self.n_workers)]
             self.X_train = [[] for i in range(self.n_workers)]
             self.Y_train =[[] for i in range(self.n_workers)]
@@ -284,6 +353,14 @@ class bayesian_optimization:
 
             for n in tqdm(range(n_iters+1), position = n_runs > 1, leave = None):
 
+                # record step indicator
+                self._record_step = False
+                if plot and n_runs == 1:
+                    if n == n_iters or not n % plot:
+                        self._record_step = True
+
+
+
                 self._prev_bc_data = copy.deepcopy(self.bc_data)
 
                 for a in range(self.n_workers):
@@ -295,10 +372,10 @@ class bayesian_optimization:
                         self.X_train[a] = self.X[a][:]
                         self.Y_train[a] = self.Y[a][:]
                     else:
-                        self.X[a].append(self.__next_query[a])
-                        self.Y[a].append(self.objective(self.__next_query[a]))
-                        self.X_train[a].append(self.__next_query[a])
-                        self.Y_train[a].append(self.objective(self.__next_query[a]))
+                        self.X[a].append(self._next_query[a])
+                        self.Y[a].append(self.objective(self._next_query[a]))
+                        self.X_train[a].append(self._next_query[a])
+                        self.Y_train[a].append(self.objective(self._next_query[a]))
 
                         X = self.X[a]
                         Y = self.Y[a]
@@ -315,8 +392,8 @@ class bayesian_optimization:
                     self.model[a].fit(X, Y)
 
                     # Find next query
-                    x = self._next_query(n, a, self.model[a], random_search)
-                    self.__next_query[a] = x
+                    x = self._find_next_query(n, a, random_search)
+                    self._next_query[a] = x
 
                     # In case of a "duplicate", randomly sample a next query point.
                     if np.any(np.abs(x - self.model[a].X_train_) <= epsilon):
@@ -329,11 +406,8 @@ class bayesian_optimization:
                 self._simple_regret[run,n] = self._regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
 
                 # Plot optimization step
-                if n_runs == 1 and plot is not False:
-                    if plot is True or n == n_iters:
-                        self._plot_iteration(n)
-                    elif not n % plot:
-                        self._plot_iteration(n)
+                if self._record_step:
+                    self._plot_iteration(n, plot)
 
         self.pre_arg_max = []
         self.pre_max = []
@@ -349,9 +423,8 @@ class bayesian_optimization:
         self._save_data(data = [r_mean, conf95], name = 'regret')
 
         # Generate gif
-        if n_runs == 1:
-            if plot is not False:
-                self._generate_gif(n_iters, plot)
+        if plot and n_runs == 1:
+            self._generate_gif(n_iters, plot)
 
     def _broadcast(self, agent, x, y):
         for neighbour_agent, neighbour in enumerate(self.network[agent]):
@@ -359,7 +432,7 @@ class bayesian_optimization:
                 self.bc_data[agent][neighbour_agent].append((x,y))
         return
 
-    def _plot_iteration(self, iter):
+    def _plot_iteration(self, iter, plot_iter):
         """
         Plots the surrogate and acquisition function.
         """
@@ -369,10 +442,7 @@ class bayesian_optimization:
             mu_a, std_a = self.model[a].predict(self._grid, return_std=True)
             mu.append(mu_a)
             std.append(std_a)
-        if self._acquisition_function == self.expected_improvement:
-            acq = [-1 * self.expected_improvement(self.model[a], self._grid, a) for a in range(self.n_workers)]
-        else:
-            acq = [-1 * self._thompson_samples[a][iter] for a in range(self.n_workers)]
+            acq = [-1 * self._acquisition_evaluations[a][iter//plot_iter] for a in range(self.n_workers)]
 
         for a in range(self.n_workers):
             mu[a] = self.scaler[a].inverse_transform(mu[a])
@@ -409,7 +479,7 @@ class bayesian_optimization:
             ax1.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
             # Acquisition function plot
             ax2.plot(self._grid, acq[a], color = rgba[a])
-            ax2.axvline(self.__next_query[a], color = rgba[a])
+            ax2.axvline(self._next_query[a], color = rgba[a])
             ax2.set_xlabel("x")
             ax2.yaxis.set_major_formatter(fmt)
             ax2.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
@@ -466,8 +536,8 @@ class bayesian_optimization:
             cbar1.ax.tick_params(labelsize=7)
             ax1.autoscale(False)
             ax1.scatter(x[a][:, 0], x[a][:, 1], zorder=1, color = rgba[a], s = 10)
-            ax1.axvline(self.__next_query[a][0], color='k', linewidth=1)
-            ax1.axhline(self.__next_query[a][1], color='k', linewidth=1)
+            ax1.axvline(self._next_query[a][0], color='k', linewidth=1)
+            ax1.axhline(self._next_query[a][1], color='k', linewidth=1)
             ax1.set_ylabel("y")
             leg1 = ax1.legend(['Objective'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax1.add_artist(leg1)
@@ -490,8 +560,8 @@ class bayesian_optimization:
             cbar2.ax.tick_params(labelsize=7)
             ax2.autoscale(False)
             ax2.scatter(x[a][:, 0], x[a][:, 1], zorder=1, color = rgba[a], s = 10)
-            ax2.axvline(self.__next_query[a][0], color='k', linewidth=1)
-            ax2.axhline(self.__next_query[a][1], color='k', linewidth=1)
+            ax2.axvline(self._next_query[a][0], color='k', linewidth=1)
+            ax2.axhline(self._next_query[a][1], color='k', linewidth=1)
             ax2.set_ylabel("y")
             ax2.legend(['Surrogate'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax2.set_xlim([first_param_grid[0], first_param_grid[-1]])
@@ -521,8 +591,8 @@ class bayesian_optimization:
             cbar3 = plt.colorbar(cp3, ax=ax3, shrink = 0.9, format=fmt, pad = 0.05)
             cbar3.ax.tick_params(labelsize=7)
             ax3.autoscale(False)
-            ax3.axvline(self.__next_query[a][0], color='k', linewidth=1)
-            ax3.axhline(self.__next_query[a][1], color='k', linewidth=1)
+            ax3.axvline(self._next_query[a][0], color='k', linewidth=1)
+            ax3.axhline(self._next_query[a][1], color='k', linewidth=1)
             ax3.set_xlabel("x")
             ax3.set_ylabel("y")
             ax3.legend(['Acquisition'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)

@@ -7,6 +7,7 @@ In addition to the vanilla bayesian optimization algorithm, **dbo** offers:
 
 * Distributed and parallel optimization
 * Stochastic policy evaluations
+* Expected acquisition policy over pending queries
 * Internal acquisition function regularization
 * Regret analysis outputs
 
@@ -71,7 +72,7 @@ The Bayesian optimizer is contained in the class bayesian_optimization in src/ba
 ```python
 class bayesian_optimization(objective, domain, arg_max = None, n_workers = 1,
                             network = None, kernel = kernels.RBF(), alpha=10**(-10),
-                            acquisition_function = 'ei', stochastic_policy = False,
+                            acquisition_function = 'ei', policy = 'greedy',
                             regularization = None, regularization_strength = 0.01,
                             grid_density = 100)
 ```
@@ -136,10 +137,13 @@ functions: 'ei' (Expected Improvement), 'ts' (Thompson Sampling).
 </pre>
 
 <pre>
-<b>stochastic_policy</b> bool, optional (default: False)
-Whether to use stochastic policy or greedy policy when selecting next query.
-If True, draw the next query from a Boltzmann distribution where the acquisition
-function acts as energy measure. If False, next query is argmax of acquisition function.
+<b>policy</b> bool, optional (default: 'greedy')
+Policy to apply on acquisition function to selecting next query.
+If 'greedy', the next query is argmax of the acquisition function.
+If 'boltzmann', draw the next query from a Boltzmann distribution where the
+acquisition function acts as energy measure. If 'expected_acquisition', next
+query is argmax of acquisition function trained on fantasies of the neighbours
+pending queries. Supported policies: 'greedy', 'boltzmann', 'expected_acquisition'.
 </pre>
 
 <pre>
@@ -221,7 +225,7 @@ All function values used for training by agent <i>i</i> is contained in Y_train[
 <pre>
 <b>__init__</b>(objective, domain, arg_max = None, n_workers = 1,
                 network = None, kernel = kernels.RBF(), alpha=10**(-10),
-                acquisition_function = 'ei', stochastic_policy = False,
+                acquisition_function = 'ei', policy = 'greedy',
                 regularization = None, regularization_strength = 0.01,
                 grid_density = 100)
 Initialize self.
@@ -576,6 +580,7 @@ When contributing to this repository, please first discuss the change you wish t
 # Updates
 
 * v.1.0: initial launch: **dbo** offers distributed and paralell bayesian optimization, stochastic policy evaluations, internal acquisition function regularization, regret analysis outputs etc.
+* v.1.1: added expected acquisition function under pending queries.
 
 # Credits
 
