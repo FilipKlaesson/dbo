@@ -137,7 +137,7 @@ functions: 'ei' (Expected Improvement), 'ts' (Thompson Sampling).
 </pre>
 
 <pre>
-<b>policy</b> bool, optional (default: 'greedy')
+<b>policy</b> str, optional (default: 'greedy')
 Policy to apply on acquisition function to selecting next query.
 If 'greedy', the next query is argmax of the acquisition function.
 If 'boltzmann', draw the next query from a Boltzmann distribution where the
