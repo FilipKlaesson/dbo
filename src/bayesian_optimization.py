@@ -23,7 +23,7 @@ from sklearn.gaussian_process import kernels, GaussianProcessRegressor
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', regularization = None, regularization_strength = 0.01, grid_density = 100):
+    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', epsilon = 0.01, regularization = None, regularization_strength = 0.01, grid_density = 100):
 
         # Optimization setup
         self.objective = objective
@@ -42,6 +42,7 @@ class bayesian_optimization:
         else:
             print('Supported acquisition functions: ei, ts')
             return
+        self._epsilon = epsilon
 
         # Regularization function
         self._regularization = None
@@ -119,15 +120,13 @@ class bayesian_optimization:
     def _ridge(self, x, center = 0):
         return self._regularization_strength * np.linalg.norm(x - center)
 
-    def _expected_improvement(self, a, x, model = None, epsilon = 0.01):
+    def _expected_improvement(self, a, x, model = None):
         """
         Expected improvement acquisition function.
         Arguments:
         ----------
             x: array-like, shape = [n_samples, n_hyperparams]
                 The point for which the expected improvement needs to be computed.
-            epsilon: float
-                Expected improvement margin, increases exploration
         """
 
         x = x.reshape(-1, self._dim)
@@ -141,7 +140,7 @@ class bayesian_optimization:
         mu = np.squeeze(mu)
 
         if self._regularization is None:
-            mu = mu - epsilon
+            mu = mu - self._epsilon
         else:
             if self._regularization == self._ridge:
                 ridge = np.array([self._ridge(i, self.X[a][-1]) for i in x])
@@ -306,7 +305,7 @@ class bayesian_optimization:
 
         return x
 
-    def optimize(self, n_iters, n_runs = 1, x0=None, n_pre_samples=5, random_search=100, epsilon=1e-7, plot = False):
+    def optimize(self, n_iters, n_runs = 1, x0=None, n_pre_samples=5, random_search=100, plot = False):
         """
         Arguments:
         ----------
@@ -319,8 +318,6 @@ class bayesian_optimization:
                 If x0 is None, samples `n_pre_samples` initial points.
             random_search: integer.
                 Flag that indicates whether to perform random search or L-BFGS-B to optimize the acquisition function.
-            epsilon: double.
-                Precision tolerance for floats.
             plot: bool or integer
                 If integer, plot iterations with every plot number iteration. If True, plot every interation.
         """
@@ -399,8 +396,8 @@ class bayesian_optimization:
                     x = self._find_next_query(n, a, random_search)
                     self._next_query[a] = x
 
-                    # In case of a "duplicate", randomly sample a next query point.
-                    if np.any(np.abs(x - self.model[a].X_train_) <= epsilon):
+                    # In case of a "duplicate", randomly sample next query point.
+                    if np.any(np.abs(x - self.model[a].X_train_) <= 10**(-7)):
                         x = np.random.uniform(self.domain[:, 0], self.domain[:, 1], self.domain.shape[0])
 
                     # Broadcast data to neighbours

@@ -73,8 +73,8 @@ The Bayesian optimizer is contained in the class bayesian_optimization in src/ba
 class bayesian_optimization(objective, domain, arg_max = None, n_workers = 1,
                             network = None, kernel = kernels.RBF(), alpha=10**(-10),
                             acquisition_function = 'ei', policy = 'greedy',
-                            regularization = None, regularization_strength = 0.01,
-                            grid_density = 100)
+                            epsilon = 0.01, regularization = None,
+                            regularization_strength = 0.01, grid_density = 100)
 ```
 
 The class implementation utilizes sklearn [GaussianProcessRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor) (Algorithm 2.1 of Gaussian Processes for Machine Learning by Rasmussen and Williams) as model on standardized data.
@@ -144,6 +144,12 @@ If 'boltzmann', draw the next query from a Boltzmann distribution where the
 acquisition function acts as energy measure. If 'expected_acquisition', next
 query is argmax of acquisition function trained including fantasies of the neighbours
 pending queries. Supported policies: 'greedy', 'boltzmann', 'expected_acquisition'.
+</pre>
+
+<pre>
+<b>epsilon</b> float, optional (default: 0.01')
+Expected improvement margin. The minimum amount required to improve.
+Disabled when regularization is not None.
 </pre>
 
 <pre>
@@ -225,7 +231,7 @@ All function values used for training by agent <i>i</i> is contained in Y_train[
 <pre>
 <b>__init__</b>(objective, domain, arg_max = None, n_workers = 1,
                 network = None, kernel = kernels.RBF(), alpha=10**(-10),
-                acquisition_function = 'ei', policy = 'greedy',
+                acquisition_function = 'ei', policy = 'greedy', epsilon = 0.01
                 regularization = None, regularization_strength = 0.01,
                 grid_density = 100)
 Initialize self.
@@ -233,7 +239,7 @@ Initialize self.
 
 <pre>
 <b>optimize</b>(n_iters, n_runs = 1, x0 = None, n_pre_samples = 5,
-                random_search = 100, epsilon = 10**(-7), plot = False)
+                random_search = 100, plot = False)
 
     <b>n_iters</b>: int
         Number of iterations to run the optimization algorithm.
@@ -245,8 +251,6 @@ Initialize self.
         If x0 is None, sample n_pre_samples initial points uniformly random in the domain.
     <b>random_search</b>: int, optional (default: 100)
         Number of samples used in random search to optimize acquisition function.
-    <b>epsilon</b>: double, optional (default: 10**(-7))
-        Precision tolerance for floats. In case of a "duplicate", randomly sample next query point.
     <b>plot</b>: int
         Plot state every plot number of iteration. If n_runs > 1, plot is disabled.
 
