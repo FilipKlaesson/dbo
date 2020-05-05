@@ -256,10 +256,10 @@ Initialize self.
     <b>random_search</b>: int, optional (default: 100)
         Number of samples used in random search to optimize acquisition function.
     <b>plot</b>: int
-        Plot state every plot number of iteration. If n_runs > 1, plot is disabled.
+        Plot state every plot number of iterations. If n_runs > 1, plot is disabled.
 
 Runs the optimization algorithm.
-Parameter n_runs allow multiple runs of the same optimization setting to simplify analysis.
+Parameter **n_runs** allow multiple runs of the same optimization setting to simplify analysis.
 </pre>
 
 
@@ -267,20 +267,20 @@ Parameter n_runs allow multiple runs of the same optimization setting to simplif
 
 **dbo** will create a **temp** folder in the same directory as **\_\_main\_\_**. The output
 (generated data/plots/gifs) will be stored in the **temp** folder keyed with date and time.
-For example, by running **dbo** with **\_\_main\_\_** in the **examples** folder, the
+For example, by running **dbo** with **\_\_main\_\_** in the **dbo** project folder, the
 directory will look like this:
 
 ```
 dbo
 └───src  
 └───examples
-    └───temp
-        └───YYYY-MM-DD_HH:MM:SS
-            └───data
-            └───fig
-                └───png
-                └───pdf
-                └───gif
+└───temp
+    └───YYYY-MM-DD_HH:MM:SS
+        └───data
+        └───fig
+            └───png
+            └───pdf
+            └───gif
 ```
 
 Running <b>optimize()</b> will generate the following output:
