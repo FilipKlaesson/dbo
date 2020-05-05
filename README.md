@@ -72,8 +72,8 @@ The Bayesian optimizer is contained in the class bayesian_optimization in src/ba
 ```python
 class bayesian_optimization(objective, domain, arg_max = None, n_workers = 1,
                             network = None, kernel = kernels.RBF(), alpha=10**(-10),
-                            acquisition_function = 'ei', policy = 'greedy', fantasies = 0
-                            epsilon = 0.01, regularization = None,
+                            acquisition_function = 'ei', policy = 'greedy',
+                            fantasies = 0, epsilon = 0.01, regularization = None,
                             regularization_strength = 0.01, grid_density = 100)
 ```
 
@@ -235,8 +235,8 @@ All function values used for training by agent <i>i</i> is contained in Y_train[
 <pre>
 <b>__init__</b>(objective, domain, arg_max = None, n_workers = 1,
                 network = None, kernel = kernels.RBF(), alpha=10**(-10),
-                acquisition_function = 'ei', policy = 'greedy', fantasies = 0,
-                epsilon = 0.01, regularization = None,
+                acquisition_function = 'ei', policy = 'greedy',
+                fantasies = 0, epsilon = 0.01, regularization = None,
                 regularization_strength = 0.01, grid_density = 100)
 Initialize self.
 </pre>
