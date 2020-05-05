@@ -184,7 +184,11 @@ class bayesian_optimization:
         x = x.reshape(-1, self._dim)
 
         # Pending queries
-        x_p = np.array([self._next_query[i] for i in range(a)]).reshape(-1, self._dim)   # Change this to be only neighbour agents with lower index
+        x_p = []
+        for neighbour_agent, neighbour in enumerate(self.network[a]):
+            if neighbour and neighbour_agent < a:
+                x_p.append(self._next_query[neighbour_agent])
+        x_p = np.array(x_p).reshape(-1, self._dim)
 
         if not x_p.shape[0]:
             return self._acquisition_function(a, x)
