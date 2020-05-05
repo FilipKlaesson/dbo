@@ -23,7 +23,7 @@ from sklearn.gaussian_process import kernels, GaussianProcessRegressor
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', epsilon = 0.01, regularization = None, regularization_strength = 0.01, grid_density = 100):
+    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', fantasies = 0, epsilon = 0.01, regularization = None, regularization_strength = 0.01, grid_density = 100):
 
         # Optimization setup
         self.objective = objective
@@ -33,6 +33,9 @@ class bayesian_optimization:
         else:
             self.network = network
         self._policy = policy
+        if policy not in ['greedy', 'boltzmann']:
+            print("Supported policies: 'greedy', 'boltzmann' ")
+            return
 
         # Acquisition function
         if acquisition_function == 'ei':
@@ -43,6 +46,7 @@ class bayesian_optimization:
             print('Supported acquisition functions: ei, ts')
             return
         self._epsilon = epsilon
+        self._num_fantasies = fantasies
 
         # Regularization function
         self._regularization = None
@@ -178,7 +182,7 @@ class bayesian_optimization:
 
         return -1 * ts
 
-    def _expected_acquisition(self, a, x, n_fantasies=5):
+    def _expected_acquisition(self, a, x):
 
         x = x.reshape(-1, self._dim)
 
@@ -198,20 +202,20 @@ class bayesian_optimization:
             mu = self.scaler[a].inverse_transform(mu)
             cov = self.scaler[a].scale_**2 * cov
             if mu.ndim == 1:
-                y_fantasies = rng.multivariate_normal(mu, cov, n_fantasies).T
+                y_fantasies = rng.multivariate_normal(mu, cov, self._num_fantasies).T
             else:
-                y_fantasies = [rng.multivariate_normal(mu[:, i], cov, n_fantasies).T[:, np.newaxis] for i in range(mu.shape[1])]
+                y_fantasies = [rng.multivariate_normal(mu[:, i], cov, self._num_fantasies).T[:, np.newaxis] for i in range(mu.shape[1])]
                 y_fantasies = np.hstack(y_fantasies)
 
             # models for fantasies
             fantasy_models = [GaussianProcessRegressor( kernel=self.kernel,
                                                         alpha=self.alpha,
                                                         optimizer=None)
-                                                        for i in range(n_fantasies) ]
+                                                        for i in range(self._num_fantasies) ]
 
             # acquisition over fantasies
-            fantasy_acquisition = np.zeros((x.shape[0], n_fantasies))
-            for i in range(n_fantasies):
+            fantasy_acquisition = np.zeros((x.shape[0], self._num_fantasies))
+            for i in range(self._num_fantasies):
 
                 f_X_train = self.X_train[a][:]
                 f_y_train = self.Y_train[a][:]
@@ -285,7 +289,7 @@ class bayesian_optimization:
             X = np.append(self._grid, x).reshape(-1, self._dim)
 
         # Calculate acquisition function
-        if self._policy == 'expected_acquisition':
+        if self._num_fantasies:
             acq = - self._expected_acquisition(a, X)
         else:
             # Vanilla acquisition functions
