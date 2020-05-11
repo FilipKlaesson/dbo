@@ -23,7 +23,7 @@ from sklearn.gaussian_process import kernels, GaussianProcessRegressor
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', fantasies = 0, epsilon = 0.01, regularization = None, regularization_strength = 0.01, grid_density = 100):
+    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', fantasies = 0, epsilon = 0.01, regularization = None, regularization_strength = 0.01, pending_regularization = None, grid_density = 100):
 
         # Optimization setup
         self.objective = objective
@@ -55,6 +55,13 @@ class bayesian_optimization:
                 self._regularization = self._ridge
             else:
                 print('Supported regularization functions: ridge')
+                return
+        self._pending_regularization = None
+        if pending_regularization is not None:
+            if pending_regularization == 'ridge':
+                self._pending_regularization = self._ridge
+            else:
+                print('Supported pending_regularization functions: ridge')
                 return
 
         # Domain
@@ -149,6 +156,18 @@ class bayesian_optimization:
             if self._regularization == self._ridge:
                 ridge = np.array([self._ridge(i, self.X[a][-1]) for i in x])
                 mu = mu - Y_max*ridge
+
+        if self._pending_regularization is not None:
+            # Pending queries
+            x_p = []
+            for neighbour_agent, neighbour in enumerate(self.network[a]):
+                if neighbour and neighbour_agent < a:
+                    x_p.append(self._next_query[neighbour_agent])
+            x_p = np.array(x_p).reshape(-1, self._dim)
+            if self._pending_regularization == self._ridge:
+                pending_ridge = np.array([sum([self._regularization_strength**2/self._ridge(i, xp) for xp in x_p]) for i in x])
+                mu = mu - Y_max*pending_ridge
+
 
         with np.errstate(divide='ignore'):
             Z = (mu - Y_max) / sigma
