@@ -131,24 +131,7 @@ class bayesian_optimization:
     def _ridge(self, x, center = 0):
         return self._regularization_strength * np.linalg.norm(x - center)
 
-    def _expected_improvement(self, a, x, model = None):
-        """
-        Expected improvement acquisition function.
-        Arguments:
-        ----------
-            x: array-like, shape = [n_samples, n_hyperparams]
-                The point for which the expected improvement needs to be computed.
-        """
-
-        x = x.reshape(-1, self._dim)
-
-        if model is None:
-            model = self.model[a]
-
-        Y_max = np.max(model.y_train_)
-
-        mu, sigma = model.predict(x, return_std=True)
-        mu = np.squeeze(mu)
+    def _regularize(self, x, a, mu, Y_max):
 
         if self._regularization is None:
             mu = mu - self._epsilon
@@ -168,6 +151,27 @@ class bayesian_optimization:
                 pending_ridge = np.array([sum([self._regularization_strength**2/self._ridge(i, xp) for xp in x_p]) for i in x])
                 mu = mu - Y_max*pending_ridge
 
+        return mu
+
+    def _expected_improvement(self, a, x, model = None):
+        """
+        Expected improvement acquisition function.
+        Arguments:
+        ----------
+            x: array-like, shape = [n_samples, n_hyperparams]
+                The point for which the expected improvement needs to be computed.
+        """
+
+        x = x.reshape(-1, self._dim)
+
+        if model is None:
+            model = self.model[a]
+
+        Y_max = np.max(model.y_train_)
+
+        mu, sigma = model.predict(x, return_std=True)
+        mu = np.squeeze(mu)
+        mu = self._regularize(x, a, mu, Y_max)
 
         with np.errstate(divide='ignore'):
             Z = (mu - Y_max) / sigma
@@ -177,7 +181,7 @@ class bayesian_optimization:
 
         return -1 * expected_improvement
 
-    def _thompson_sampling(self, a, x, num_samples = 1):
+    def _thompson_sampling(self, a, x, model = None, num_samples = 1):
         """
         Thompson sampling acquisition function.
         Arguments:
@@ -194,10 +198,14 @@ class bayesian_optimization:
         if model is None:
             model = self.model[a]
 
-        yts = model[a].sample_y(x, n_samples=num_samples)
+        Y_max = np.max(model.y_train_)
+
+        yts = model.sample_y(x, n_samples=num_samples)
+
         if num_samples > 1:
             yts = np.squeeze(yts)
-        ts = np.mean(yts, axis=1)
+        ts = np.squeeze(np.mean(yts, axis=1))
+        ts = self._regularize(x, a, ts, Y_max)
 
         return -1 * ts
 
