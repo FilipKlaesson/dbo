@@ -112,7 +112,7 @@ class bayesian_optimization:
         r_std = [np.std(self._simple_regret[:,iter]) for iter in range(self._simple_regret.shape[1])]
         # 95% confidence interval
         conf95 = [1.96*rst/self._simple_regret.shape[0] for rst in r_std]
-        return r_mean, conf95
+        return range(self._simple_regret.shape[1]), r_mean, conf95
 
     def _save_data(self, data, name):
         with open(self._DATA_DIR_ + '/' + name + '.csv', 'w', newline='') as file:
@@ -421,11 +421,11 @@ class bayesian_optimization:
             self.pre_max.append(self.model[a].X_train_[np.array(self.model[a].y_train_).argmax()])
 
         # Compute and plot regret
-        r_mean, conf95 = self._mean_regret()
-        self._plot_regret(r_mean, conf95)
+        iter, r_mean, conf95 = self._mean_regret()
+        self._plot_regret(iter, r_mean, conf95)
 
         # Save data
-        self._save_data(data = [r_mean, conf95], name = 'regret')
+        self._save_data(data = [iter, r_mean, conf95], name = 'regret')
 
         # Generate gif
         if plot and n_runs == 1:
@@ -612,7 +612,7 @@ class bayesian_optimization:
             plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d_agent_%d.pdf' % (iter, a), bbox_inches='tight')
             plt.savefig(self._PNG_DIR_ + '/bo_iteration_%d_agent_%d.png' % (iter, a), bbox_inches='tight')
 
-    def _plot_regret(self, r_mean, conf95, log = False):
+    def _plot_regret(self, iter, r_mean, conf95, log = False):
 
         use_log_scale = max(r_mean)/min(r_mean) > 10
 
@@ -630,8 +630,8 @@ class bayesian_optimization:
         if use_log_scale:
             plt.yscale('log')
 
-        plt.plot(range(self._simple_regret.shape[1]), r_mean, '-', linewidth=1)
-        plt.fill_between(range(self._simple_regret.shape[1]), upper, lower, alpha=0.3)
+        plt.plot(iter, r_mean, '-', linewidth=1)
+        plt.fill_between(iter, upper, lower, alpha=0.3)
         plt.xlabel('iterations')
         plt.ylabel('immediate regret')
         plt.grid(b=True, which='major', color='grey', linestyle='-', alpha=0.6)
