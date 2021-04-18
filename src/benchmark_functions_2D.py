@@ -1,6 +1,6 @@
 import numpy as np
 
-class Bohachevsky_1:
+class Bohachevsky:
     def __init__(self):
         self.domain = np.array([[-100, 100], [-100, 100]])
         self.function = lambda x: x[0]**2 + 2*x[1]**2 - 0.3*np.cos(3*np.pi*x[0]) - 0.4*np.cos(4*np.pi*x[1])+0.7
@@ -10,7 +10,7 @@ class Bohachevsky_1:
 class Rosenbrock:
     def __init__(self):
         self.domain = np.array([[-2, 2], [-1, 3]])
-        self.function = lambda x: 100*(x[1]-x[0]**2)**2 + (1-x[0])**2
+        self.function = lambda x: (1-x[0])**2 + 100*(x[1]-x[0]**2)**2
         self.min = 0
         self.arg_min = np.array([[1, 1]])
 
@@ -52,3 +52,10 @@ class GoldsteinPrice:
         self.function = lambda x: (1+(x[0]+x[1]+1)**2 * (19-14*x[0]+3*x[0]**2-14*x[1]+6*x[0]*x[1]+3*x[1]**2))*(30 + (2*x[0]-3*x[1])**2*(18-32*x[0]+12*x[0]**2+48*x[1]-36*x[0]*x[1]+27*x[1]**2))
         self.min = 3
         self.arg_min = np.array([[0,-1]])
+
+class Bird:
+    def __init__(self):
+        self.domain = np.array([[-2*np.pi, 2*np.pi], [-2*np.pi, 2*np.pi]])
+        self.function = lambda x: np.sin(x[0])*np.exp((1-np.cos(x[1]))**2) + np.cos(x[1])*np.exp((1-np.sin(x[0]))**2) + (x[0]-x[1])**2
+        self.min = - 106.764537
+        self.arg_min = np.array([[4.70104, 3.15294],[-1.58214,-3.13024]])

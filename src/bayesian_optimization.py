@@ -23,7 +23,7 @@ from sklearn.gaussian_process import kernels, GaussianProcessRegressor
 warnings.filterwarnings("ignore")
 
 class bayesian_optimization:
-    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', fantasies = 0, epsilon = 0.01, regularization = None, regularization_strength = 0.01, pending_regularization = None, grid_density = 100):
+    def __init__(self, objective, domain, arg_max = None, n_workers = 1, network = None, kernel = kernels.RBF(), alpha=10**(-10), acquisition_function = 'ei', policy = 'greedy', fantasies = 0, epsilon = 0.01, regularization = None, regularization_strength = None, pending_regularization = None, pending_regularization_strength = None, grid_density = 100):
 
         # Optimization setup
         self.objective = objective
@@ -83,6 +83,7 @@ class bayesian_optimization:
         self.alpha = alpha
         self.kernel = kernel
         self._regularization_strength = regularization_strength
+        self._pending_regularization_strength = pending_regularization_strength
         self.model = [GaussianProcessRegressor(  kernel=self.kernel,
                                                     alpha=self.alpha,
                                                     n_restarts_optimizer=10)
@@ -121,6 +122,13 @@ class bayesian_optimization:
         conf95 = [1.96*rst/self._simple_regret.shape[0] for rst in r_std]
         return range(self._simple_regret.shape[1]), r_mean, conf95
 
+    def _mean_distance_traveled(self):
+        d_mean = [np.mean(self._distance_traveled[:,iter]) for iter in range(self._distance_traveled.shape[1])]
+        d_std = [np.std(self._distance_traveled[:,iter]) for iter in range(self._distance_traveled.shape[1])]
+        # 95% confidence interval
+        conf95 = [1.96*dst/self._distance_traveled.shape[0] for dst in d_std]
+        return range(self._distance_traveled.shape[1]), d_mean, conf95
+
     def _save_data(self, data, name):
         with open(self._DATA_DIR_ + '/' + name + '.csv', 'w', newline='') as file:
             writer = csv.writer(file, delimiter=',')
@@ -129,27 +137,43 @@ class bayesian_optimization:
         return
 
     def _ridge(self, x, center = 0):
-        return self._regularization_strength * np.linalg.norm(x - center)
+        return np.linalg.norm(x - center)
 
     def _regularize(self, x, a, mu, Y_max):
 
-        if self._regularization is None:
+        if self._regularization is None and self._pending_regularization is None:
             mu = mu - self._epsilon
         else:
-            if self._regularization == self._ridge:
-                ridge = np.array([self._ridge(i, self.X[a][-1]) for i in x])
-                mu = mu - Y_max*ridge
+            # Distance regularization
+            if self._regularization is not None:
+                if self._regularization == self._ridge:
+                    if self._regularization_strength is not None:
+                        reg = np.array([self._regularization_strength*self._ridge(i, self.X[a][-1]) for i in x])
+                    else:
+                        reg = []
+                        kernel = copy.deepcopy(self.model[a].kernel_)
+                        param = {"length_scale": 0.7*max([d[1]-d[0] for d in self.domain])}
+                        kernel.set_params(**param)
+                        for i in x:
+                            k = float(kernel(np.array([i]), np.array([self.X[a][-1]])))
+                            reg.append(0.1*(1 - k))
+                        reg = np.array(reg)
+                mu = mu - Y_max*reg
 
-        if self._pending_regularization is not None:
-            # Pending queries
-            x_p = []
-            for neighbour_agent, neighbour in enumerate(self.network[a]):
-                if neighbour and neighbour_agent < a:
-                    x_p.append(self._next_query[neighbour_agent])
-            x_p = np.array(x_p).reshape(-1, self._dim)
-            if self._pending_regularization == self._ridge:
-                pending_ridge = np.array([sum([self._regularization_strength**2/self._ridge(i, xp) for xp in x_p]) for i in x])
-                mu = mu - Y_max*pending_ridge
+            # Pending query regularization
+            if self._pending_regularization is not None:
+                # Pending queries
+                x_p = []
+                for neighbour_agent, neighbour in enumerate(self.network[a]):
+                    if neighbour and neighbour_agent < a:
+                        x_p.append(self._next_query[neighbour_agent])
+                x_p = np.array(x_p).reshape(-1, self._dim)
+                if self._pending_regularization == self._ridge:
+                    if self._pending_regularization_strength is not None:
+                        pending_reg = np.array([self._pending_regularization_strength*sum([1/self._ridge(i, xp) for xp in x_p]) for i in x])
+                    else:
+                        pending_reg = np.array([sum([0.1*float(self.model[a].kernel_(np.array([i]), np.array([xp]))) for xp in x_p]) for i in x])
+                mu = mu - Y_max*pending_reg
 
         return mu
 
@@ -200,7 +224,7 @@ class bayesian_optimization:
 
         Y_max = np.max(model.y_train_)
 
-        yts = model.sample_y(x, n_samples=num_samples)
+        yts = model.sample_y(x, n_samples=num_samples, random_state = None)
 
         if num_samples > 1:
             yts = np.squeeze(yts)
@@ -284,8 +308,8 @@ class bayesian_optimization:
                 The acqusition function value for x.
         """
         C = max(abs(max(acq)-acq))
-        if C > 0:
-            beta = 2*np.log(n+self._initial_data_size+1)/C
+        if C > 10**(-2):
+            beta = 3*np.log(n+self._initial_data_size+1)/C
             _blotzmann_prob = lambda e: np.exp(beta*e)
             bm = [_blotzmann_prob(e) for e in acq]
             norm_bm = [float(i)/sum(bm) for i in bm]
@@ -354,6 +378,7 @@ class bayesian_optimization:
         """
 
         self._simple_regret = np.zeros((n_runs, n_iters+1))
+        self._distance_traveled = np.zeros((n_runs, n_iters+1))
 
         for run in tqdm(range(n_runs), position=0, leave = None, disable = not n_runs > 1):
 
@@ -370,17 +395,18 @@ class bayesian_optimization:
                                                         for i in range(self.n_workers) ]
 
             # Initial data
-            for a in range(self.n_workers):
-                if x0 is None:
-                    for params in np.random.uniform(self.domain[:, 0], self.domain[:, 1], (n_pre_samples, self.domain.shape[0])):
+            if x0 is None:
+                for params in np.random.uniform(self.domain[:, 0], self.domain[:, 1], (n_pre_samples, self.domain.shape[0])):
+                    for a in range(self.n_workers):
                         self.X[a].append(params)
                         self.Y[a].append(self.objective(params))
-                else:
-                    # Change definition of x0 to be specfic for each agent
-                    for params in x0:
+            else:
+                # Change definition of x0 to be specfic for each agent
+                for params in x0:
+                    for a in range(self.n_workers):
                         self.X[a].append(params)
                         self.Y[a].append(self.objective(params))
-                self._initial_data_size = len(self.Y[0])
+            self._initial_data_size = len(self.Y[0])
 
 
             for n in tqdm(range(n_iters+1), position = n_runs > 1, leave = None):
@@ -436,6 +462,11 @@ class bayesian_optimization:
 
                 # Calculate regret
                 self._simple_regret[run,n] = self._regret(np.max([y_max for y_a in self.Y_train for y_max in y_a]))
+                # Calculate distance traveled
+                if not n:
+                    self._distance_traveled[run,n] = 0
+                else:
+                    self._distance_traveled[run,n] =  self._distance_traveled[run,n-1] + sum([np.linalg.norm(self.X[a][-2] - self.X[a][-1]) for a in range(self.n_workers)])
 
                 # Plot optimization step
                 if self._record_step:
@@ -448,11 +479,13 @@ class bayesian_optimization:
             self.pre_max.append(self.model[a].X_train_[np.array(self.model[a].y_train_).argmax()])
 
         # Compute and plot regret
-        iter, r_mean, conf95 = self._mean_regret()
-        self._plot_regret(iter, r_mean, conf95)
+        iter, r_mean, r_conf95 = self._mean_regret()
+        self._plot_regret(iter, r_mean, r_conf95)
+
+        iter, d_mean, d_conf95 = self._mean_distance_traveled()
 
         # Save data
-        self._save_data(data = [iter, r_mean, conf95], name = 'regret')
+        self._save_data(data = [iter, r_mean, r_conf95, d_mean, d_conf95], name = 'data')
 
         # Generate gif
         if plot and n_runs == 1:
@@ -490,7 +523,9 @@ class bayesian_optimization:
     def _plot_1d(self, iter, mu, std, acq):
         cmap = cm.get_cmap('jet')
         rgba = [cmap(i) for i in np.linspace(0,1,self.n_workers)]
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8,8), sharex=True)
+        if self.n_workers == 1:
+            rgba = ['k']
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10,10), sharex=True)
 
         class ScalarFormatterForceFormat(ticker.ScalarFormatter):
             def _set_format(self):
@@ -501,35 +536,46 @@ class bayesian_optimization:
 
         #Objective function
         y_obj = [self.objective(i) for i in self._grid]
-        ax1.plot(self._grid, y_obj, 'k--')
+        ax1.plot(self._grid, y_obj, 'k--', lw=1)
         for a in range(self.n_workers):
             # Surrogate plot
-            ax1.plot(self._grid, mu[a], color = rgba[a])
-            ax1.fill_between(np.squeeze(self._grid), np.squeeze(mu[a]) - std[a], np.squeeze(mu[a]) + std[a], color = rgba[a], alpha=0.2)
+            ax1.plot(self._grid, mu[a], color = rgba[a], lw=1)
+            ax1.fill_between(np.squeeze(self._grid), np.squeeze(mu[a]) - 2*std[a], np.squeeze(mu[a]) + 2*std[a], color = rgba[a], alpha=0.1)
             ax1.scatter(self.X[a], self.Y[a], color = rgba[a], s=20, zorder=3)
             ax1.yaxis.set_major_formatter(fmt)
+            ax1.set_ylim(bottom = -10, top=14)
             ax1.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
             # Acquisition function plot
-            ax2.plot(self._grid, acq[a], color = rgba[a])
-            ax2.axvline(self._next_query[a], color = rgba[a])
-            ax2.set_xlabel("x")
+            ax2.plot(self._grid, acq[a], color = rgba[a], lw=1)
+            ax2.axvline(self._next_query[a], color = rgba[a], lw=1)
+            ax2.set_xlabel("x", fontsize = 16)
             ax2.yaxis.set_major_formatter(fmt)
             ax2.set_xticks(np.linspace(self._grid[0],self._grid[-1], 5))
+
+        ax1.tick_params(axis='both', which='major', labelsize=16)
+        ax1.tick_params(axis='both', which='minor', labelsize=16)
+        ax2.tick_params(axis='both', which='major', labelsize=16)
+        ax2.tick_params(axis='both', which='minor', labelsize=16)
+        ax1.yaxis.offsetText.set_fontsize(16)
+        ax2.yaxis.offsetText.set_fontsize(16)
 
         # Legends
         if self.n_workers > 1:
             c = 'k'
         else:
             c = rgba[a]
-        legend_elements1 = [Line2D([0], [0], linestyle = '--', color='k', lw=1, label='Objective'),
-                           Line2D([0], [0], color=c, lw=1, label='Surrogate'),
-                           Line2D([], [], marker='o', color=c, label='Queries', markerfacecolor=c, markersize=4)]
-        ax1.legend(handles=legend_elements1, loc='upper right', fancybox=True, framealpha=0.5)
+        legend_elements1 = [Line2D([0], [0], linestyle = '--', color='k', lw=0.8, label='Objective'),
+                           Line2D([0], [0], color=c, lw=0.8, label='Surrogate'),
+                           Line2D([], [], marker='o', color=c, label='Observations', markerfacecolor=c, markersize=4)]
+        leg1 = ax1.legend(handles=legend_elements1, fontsize = 16, loc='upper right', fancybox=True, framealpha=0.2)
+        ax1.add_artist(leg1)
+        ax1.legend(["Iteration %d" % (iter)], fontsize = 16, loc='upper left', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
 
-        legend_elements2 = [ Line2D([0], [0], color=c, lw=1, label='Acquisition'),
+
+        legend_elements2 = [ Line2D([0], [0], color=c, lw=0.8, label='Acquisition'),
                             Line2D([], [], color=c, marker='|', linestyle='None',
                           markersize=10, markeredgewidth=1, label='Next Query')]
-        ax2.legend(handles=legend_elements2, loc='upper right', fancybox=True, framealpha=0.5)
+        ax2.legend(handles=legend_elements2, fontsize = 16, loc='upper right', fancybox=True, framealpha=0.5)
 
         plt.tight_layout()
         plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d.pdf' % (iter), bbox_inches='tight')
@@ -539,6 +585,8 @@ class bayesian_optimization:
 
         cmap = cm.get_cmap('jet')
         rgba = [cmap(i) for i in np.linspace(0,1,self.n_workers)]
+        if self.n_workers == 1:
+            rgba = ['k']
 
         class ScalarFormatterForceFormat(ticker.ScalarFormatter):
             def _set_format(self):
@@ -560,49 +608,60 @@ class bayesian_optimization:
             (ax1, ax2, ax3) = ax
             plt.setp(ax.flat, aspect=1.0, adjustable='box')
 
+            N = 100
             # Objective plot
             Y_obj = [self.objective(i) for i in self._grid]
-            clev1 = np.linspace(min(Y_obj), max(Y_obj),100)
+            clev1 = np.linspace(min(Y_obj), max(Y_obj),N)
             cp1 = ax1.contourf(X, Y, np.array(Y_obj).reshape(X.shape), clev1,  cmap = cm.coolwarm)
+            for c in cp1.collections:
+                c.set_edgecolor("face")
             cbar1 = plt.colorbar(cp1, ax=ax1, shrink = 0.9, format=fmt, pad = 0.05)
-            cbar1.ax.tick_params(labelsize=7)
+            cbar1.ax.tick_params(labelsize=10)
+            cbar1.ax.locator_params(nbins=5)
             ax1.autoscale(False)
             ax1.scatter(x[a][:, 0], x[a][:, 1], zorder=1, color = rgba[a], s = 10)
             ax1.axvline(self._next_query[a][0], color='k', linewidth=1)
             ax1.axhline(self._next_query[a][1], color='k', linewidth=1)
-            ax1.set_ylabel("y")
-            leg1 = ax1.legend(['Objective'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
+            ax1.set_ylabel("y", fontsize = 10, rotation=0)
+            leg1 = ax1.legend(['Objective'], fontsize = 10, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax1.add_artist(leg1)
             ax1.set_xlim([first_param_grid[0], first_param_grid[-1]])
             ax1.set_ylim([second_param_grid[0], second_param_grid[-1]])
             ax1.set_xticks(np.linspace(first_param_grid[0],first_param_grid[-1], 5))
             ax1.set_yticks(np.linspace(second_param_grid[0],second_param_grid[-1], 5))
             plt.setp(ax1.get_yticklabels()[0], visible=False)
-            ax1.tick_params(axis='both', which='both', labelsize=7)
-            ax1.scatter(self.arg_max[:,0], self.arg_max[:,1], marker='x', c='gold', s=50)
-            ax1.legend(["Iteration %d" % (iter)], fontsize = 8, loc='upper left', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
+            ax1.tick_params(axis='both', which='both', labelsize=10)
+            ax1.scatter(self.arg_max[:,0], self.arg_max[:,1], marker='x', c='gold', s=30)
+
+            if self.n_workers > 1:
+                ax1.legend(["Iteration %d" % (iter), "Agent %d" % (a)], fontsize = 10, loc='upper left', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
+            else:
+                ax1.legend(["Iteration %d" % (iter)], fontsize = 10, loc='upper left', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
 
             # Surrogate plot
             d = 0
             if mu[a].reshape(X.shape).max() - mu[a].reshape(X.shape).min() == 0:
                 d = acq[a].reshape(X.shape).max()*0.1
-            clev2 = np.linspace(mu[a].reshape(X.shape).min() - d, mu[a].reshape(X.shape).max() + d,100)
+            clev2 = np.linspace(mu[a].reshape(X.shape).min() - d, mu[a].reshape(X.shape).max() + d,N)
             cp2 = ax2.contourf(X, Y, mu[a].reshape(X.shape), clev2,  cmap = cm.coolwarm)
+            for c in cp2.collections:
+                c.set_edgecolor("face")
             cbar2 = plt.colorbar(cp2, ax=ax2, shrink = 0.9, format=fmt, pad = 0.05)
-            cbar2.ax.tick_params(labelsize=7)
+            cbar2.ax.tick_params(labelsize=10)
+            cbar2.ax.locator_params(nbins=5)
             ax2.autoscale(False)
             ax2.scatter(x[a][:, 0], x[a][:, 1], zorder=1, color = rgba[a], s = 10)
             ax2.axvline(self._next_query[a][0], color='k', linewidth=1)
             ax2.axhline(self._next_query[a][1], color='k', linewidth=1)
-            ax2.set_ylabel("y")
-            ax2.legend(['Surrogate'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
+            ax2.set_ylabel("y", fontsize = 10, rotation=0)
+            ax2.legend(['Surrogate'], fontsize = 10, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax2.set_xlim([first_param_grid[0], first_param_grid[-1]])
             ax2.set_ylim([second_param_grid[0], second_param_grid[-1]])
             ax2.set_xticks(np.linspace(first_param_grid[0],first_param_grid[-1], 5))
             ax2.set_yticks(np.linspace(second_param_grid[0],second_param_grid[-1], 5))
             plt.setp(ax2.get_yticklabels()[0], visible=False)
             plt.setp(ax2.get_yticklabels()[-1], visible=False)
-            ax2.tick_params(axis='both', which='both', labelsize=7)
+            ax2.tick_params(axis='both', which='both', labelsize=10)
 
             # Broadcasted data
             for transmitter in range(self.n_workers):
@@ -616,24 +675,38 @@ class bayesian_optimization:
 
             # Acquisition function contour plot
             d = 0
-            if acq[a].reshape(X.shape).max() - acq[a].reshape(X.shape).min() == 0:
+            if acq[a].reshape(X.shape).max() - acq[a].reshape(X.shape).min() == 0.0:
                 d = acq[a].reshape(X.shape).max()*0.1
-            clev3 = np.linspace(acq[a].reshape(X.shape).min() - d, acq[a].reshape(X.shape).max() + d,100)
+                d = 10**(-100)
+            clev3 = np.linspace(acq[a].reshape(X.shape).min() - d, acq[a].reshape(X.shape).max() + d,N)
             cp3 = ax3.contourf(X, Y, acq[a].reshape(X.shape), clev3, cmap = cm.coolwarm)
             cbar3 = plt.colorbar(cp3, ax=ax3, shrink = 0.9, format=fmt, pad = 0.05)
-            cbar3.ax.tick_params(labelsize=7)
+            for c in cp3.collections:
+                c.set_edgecolor("face")
+            cbar3.ax.locator_params(nbins=5)
+            cbar3.ax.tick_params(labelsize=10)
             ax3.autoscale(False)
             ax3.axvline(self._next_query[a][0], color='k', linewidth=1)
             ax3.axhline(self._next_query[a][1], color='k', linewidth=1)
-            ax3.set_xlabel("x")
-            ax3.set_ylabel("y")
-            ax3.legend(['Acquisition'], fontsize = 8, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
+            ax3.set_xlabel("x", fontsize = 10)
+            ax3.set_ylabel("y", fontsize = 10, rotation=0)
+            ax3.legend(['Acquisition'], fontsize = 10, loc='upper right', handletextpad=0, handlelength=0, fancybox=True, framealpha = 0.2)
             ax3.set_xlim([first_param_grid[0], first_param_grid[-1]])
             ax3.set_ylim([second_param_grid[0], second_param_grid[-1]])
             ax3.set_xticks(np.linspace(first_param_grid[0],first_param_grid[-1], 5))
             ax3.set_yticks(np.linspace(second_param_grid[0],second_param_grid[-1], 5))
             plt.setp(ax3.get_yticklabels()[-1], visible=False)
-            ax3.tick_params(axis='both', which='both', labelsize=7)
+            ax3.tick_params(axis='both', which='both', labelsize=10)
+
+            ax1.tick_params(axis='both', which='major', labelsize=10)
+            ax1.tick_params(axis='both', which='minor', labelsize=10)
+            ax2.tick_params(axis='both', which='major', labelsize=10)
+            ax2.tick_params(axis='both', which='minor', labelsize=10)
+            ax3.tick_params(axis='both', which='major', labelsize=10)
+            ax3.tick_params(axis='both', which='minor', labelsize=10)
+            ax1.yaxis.offsetText.set_fontsize(10)
+            ax2.yaxis.offsetText.set_fontsize(10)
+            ax3.yaxis.offsetText.set_fontsize(10)
 
             fig.subplots_adjust(wspace=0, hspace=0)
             plt.savefig(self._PDF_DIR_ + '/bo_iteration_%d_agent_%d.pdf' % (iter, a), bbox_inches='tight')
